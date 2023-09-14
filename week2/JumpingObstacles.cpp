@@ -92,7 +92,6 @@ int main()
 
         Sleep(10);
     }
-
     EndBatchDraw();
     closegraph();
     _getch();
