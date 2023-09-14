@@ -24,6 +24,9 @@ int main()
     TCHAR count_char[100];
     bool counter = true;
     settextstyle(20, 0, _T("ËÎÌו"));
+
+    BeginBatchDraw();
+
     while (true) {
 
         // refresh location of rectangle
@@ -85,9 +88,12 @@ int main()
         fillcircle(x, y, r);
         fillrectangle(left, top, right, bottom);
 
+        FlushBatchDraw();
+
         Sleep(10);
     }
 
+    EndBatchDraw();
     closegraph();
     _getch();
     return 0;
