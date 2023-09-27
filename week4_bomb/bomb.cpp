@@ -167,6 +167,9 @@ void DrawMap()
 			fillcircle(enemy[i][0], enemy[i][1], r);
 			setlinecolor(RED);
 			setfillcolor(RED);
+			// collide with enemies
+			if (x - r <= enemy[i][0] + r && x + r >= enemy[i][0] - r && y - r <= enemy[i][1] + r && y + r >= enemy[i][1] - r)
+				game = false;
 		}
 	}
 }
@@ -219,8 +222,14 @@ void CreateBomb()
 	{
 		bx = x;
 		by = y;
-		bx -= ((x - 25) % 50);
-		by -= ((y - 25) % 50);
+		if ((bx - 25) % 50 >= 30)
+			bx += (50 - ((x - 25) % 50));
+		else
+			bx -= ((x - 25) % 50);
+		if ((by - 25) % 50 >= 30)
+			by += (50 - ((y - 25) % 50));
+		else
+			by -= ((y - 25) % 50);
 	}
 	if (bomb > 0)
 	{
@@ -263,16 +272,30 @@ void Bombing()
 		if (i + 1 < 17) 
 			Box[i + 1][j] = false;
 
-		// TODO: Destroy enemies
+		// Destroy enemies
+		for (int i = 0; i < 3; i++)
+		{
+			if ((enemy[i][0] - r <= bx + 75 && enemy[i][0] + r >= bx - 75 && enemy[i][1] - r <= by + 25 && enemy[i][1] + r >= by - 25) || (enemy[i][0] - r <= bx + 25 && enemy[i][0] + r >= bx - 25 && enemy[i][1] - r <= by + 75 && enemy[i][1] + r >= by - 75))
+				enemy[i][3] = 0;
+		}
 
 		// game over
-		// TODO: collide with enemies
 		if ((x - r <= bx + 75 && x + r >= bx - 75 && y - r <= by + 25 && y + r >= by - 25) || (x - r <= bx + 25 && x + r >= bx - 25 && y - r <= by + 75 && y + r >= by - 75))
 			game = false;
 	}
 }
 
 // TODO: success
+void Success()
+{
+	bool s = true;
+	for (int i = 0; i < 3; i++)
+	{
+		if (enemy[i][3] == 1)
+			s = false;
+	}
+	success = s;
+}
 
 int main()
 {
@@ -289,7 +312,7 @@ int main()
 	CreateEnemy();
 
 	BeginBatchDraw();
-	while (game == true)
+	while (game == true && success == false)
 	{
 		upflag = true, downflag = true, leftflag = true, rightflag = true;
 
@@ -312,7 +335,7 @@ int main()
 		Sleep(10);
 		cleardevice();
 
-		enemy[0][3] = 0;
+		Success();
 	}
 
 	settextstyle(50, 0, _T("ËÎÌו"));
