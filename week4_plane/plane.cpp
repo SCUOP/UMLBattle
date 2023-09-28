@@ -34,6 +34,8 @@ public:
 Node myPlane(260, 740);
 list<Node> enemyPlaneList;
 list<Node> bulletList;
+list<Node> enemyBulletList;
+int blood = 10;
 
 //	Detection of keyboard pressing
 void IsPressKey()
@@ -44,13 +46,29 @@ void IsPressKey()
 		key = _getch();		//	Obtain key info
 
 		if (GetAsyncKeyState(VK_UP))     //Up
-			myPlane.y -= 8;
+		{
+			myPlane.y -= 3;
+			if (myPlane.y < 20)
+				myPlane.y = 20;
+		}
 		if (GetAsyncKeyState(VK_DOWN))   //Down
-			myPlane.y += 8;
+		{
+			myPlane.y += 3;
+			if (myPlane.y > WIN_HEIGHT - 18)
+				myPlane.y = WIN_HEIGHT - 18;
+		}
 		if (GetAsyncKeyState(VK_LEFT))   //Left
-			myPlane.x -= 6;
+		{
+			myPlane.x -= 4;
+			if (myPlane.x < 0)
+				myPlane.x = 0;
+		}
 		if (GetAsyncKeyState(VK_RIGHT))  //Right
-			myPlane.x += 6;
+		{
+			myPlane.x += 4;
+			if (myPlane.x > WIN_WIDTH - 32)
+				myPlane.x = WIN_WIDTH - 32;
+		}
 	}
 }
 
@@ -60,6 +78,7 @@ void Shoot() {
 
 	list<Node>::iterator pDj = enemyPlaneList.begin();
 	list<Node>::iterator pZd = bulletList.begin();
+	list<Node>::iterator pEzd = enemyBulletList.begin();
 
 	//	Iterate all planes 
 	bool flag = false;
@@ -86,6 +105,29 @@ void Shoot() {
 		}
 		++pDj;
 	}
+
+	while (pEzd != enemyBulletList.end())
+	{
+		list<Node>::iterator Ezd = pEzd;
+		++pEzd;
+		if (Ezd->x + 5 >= (myPlane.x) && Ezd->x - 5 <= (myPlane.x + 32) && Ezd->y + 5 >= (myPlane.y) && Ezd->y - 5 <= (myPlane.y + 18))
+		{
+			blood -= 1;
+			enemyBulletList.erase(Ezd);
+		}
+	}
+
+	pDj = enemyPlaneList.begin();
+	while (pDj != enemyPlaneList.end())
+	{
+		if ((pDj->x + 30) >= (myPlane.x) && (pDj->x) <= (myPlane.x + 32) && (pDj->y + 30) >= (myPlane.y) && (pDj->y - 15) <= (myPlane.y + 18))
+		{
+			blood -= 1;
+			enemyPlaneList.erase(pDj);
+			break;
+		}
+		pDj++;
+	}
 }
 
 int main()
@@ -94,12 +136,15 @@ int main()
 	srand((unsigned int)time(NULL));
 	//	Create the screen
 	initgraph(WIN_WIDTH, WIN_HEIGHT, SHOWCONSOLE);
+	setfillcolor(RGB(255, 127, 127));
 
 	DWORD t1, t2;			//	Speed of enemy planes
 	DWORD tt1, tt2;			//	Speed of the bullets
+	DWORD et1, et2;			//  Speed of the enemy's bullets
 
 	t1 = GetTickCount();			//	Starting time of the plane
 	tt1 = GetTickCount();			//	Starting time of the bullet
+	et1 = GetTickCount();			//  Starting time of the enemy's bullet
 
 	while (1)
 	{
@@ -117,6 +162,20 @@ int main()
 			tt1 = tt2;
 		}
 
+		// Add a ememy's bullet every 500ms with 1/2 probability
+		et2 = GetTickCount();
+		if (et2 - et1 >= 500)
+		{
+			list<Node>::iterator pDj = enemyPlaneList.begin();
+			while (pDj != enemyPlaneList.end())
+			{
+				if (rand() % 2 == 0)
+					enemyBulletList.push_back(Node(pDj->x + 20, pDj->y + 18 + 10));
+				++pDj;
+			}
+			et1 = et2;
+		}
+			
 		BeginBatchDraw();		  //Starting batchdraw
 		cleardevice();
 
@@ -128,7 +187,7 @@ int main()
 			//Print the bullet
 			circle(p.x, p.y, 5);
 			//	moving upwards
-			p.y--;
+			p.y -= 3;
 		}
 
 		// Show the enemy plane
@@ -139,6 +198,25 @@ int main()
 			p.y++;
 		}
 
+		// Show the enemy's bullet
+		setlinecolor(RGB(255, 127, 127));
+		for (auto& p : enemyBulletList)
+		{
+			//Print the bullet
+			circle(p.x, p.y, 5);
+			//	moving upwards
+			p.y += 2;
+		}
+		setlinecolor(WHITE);
+
+		// Show the blood
+		rectangle(0, 0, 200, 20);
+		fillrectangle(0, 0, blood * 20, 20);
+
+		// game over
+		if (blood == 0)
+			break;
+
 		Sleep(5);
 
 		Shoot(); // detection of collision
@@ -148,7 +226,11 @@ int main()
 		IsPressKey(); // detection of keyboard signal
 
 	}
-
+	settextstyle(50, 0, _T("ËÎÌו"));
+	outtextxy(180, 350, _T("GAME OVER"));
+	FlushBatchDraw();
+	cleardevice();
+	while (true);
 	getchar();
 
 	return 0;
