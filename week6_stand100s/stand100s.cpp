@@ -6,6 +6,7 @@
 #include <conio.h>
 #include <time.h>
 #include "EasyXPng.h"  // 
+#pragma comment(lib,"winmm.lib")
 #define  WIDTH 560 //
 #define  HEIGHT 800 // 
 #define	 MaxBulletNum 200  // 
@@ -31,9 +32,9 @@ public:
 	{
 		putimagePng(x - width / 2, y - height / 2, &im_rocket);
 		// 
-		for (int i = 0; i <= life; i++)
+		for (int i = 0; i < life; i++)
 		{
-			putimagePng(im_blood.getwidth() / 2 , im_blood.getheight() / 2, &im_blood);
+			putimagePng((i + 1) * im_blood.getwidth(), im_blood.getheight(), &im_blood);
 		}
 	}
 
@@ -82,12 +83,22 @@ public:
 	{
 		if (exist == false)
 			return;
-		if (x + radius > rocket.x - rocket.width / 2 + 5 && x - radius < rocket.x + rocket.width / 2 - 5 && y + radius > rocket.y - rocket.height / 2 + 5 && y - radius < rocket.y + rocket.height / 2 - 5) // +-5为了实现更加内部的碰撞效果
+		if (x + radius > rocket.x - rocket.width / 2 + 5 && x - radius < rocket.x + rocket.width / 2 - 5 && y + radius > rocket.y - rocket.height / 2 + 5 && y - radius < rocket.y + rocket.height / 2 - 5) // +-5 for better collosion
 		{
 			exist = false;
 			boom = 50;
 			rocket.life--;
+			PlayMusicOnce((TCHAR*)_T("material\\boom.mp3"));
 		}
+	}
+
+	void PlayMusicOnce(TCHAR fileName[80])
+	{
+		TCHAR cmdString1[50];
+		swprintf_s(cmdString1, _T("open %s alias tmpmusic"), fileName);    // 生成命令字符串
+		mciSendString(_T("close tmpmusic"), NULL, 0, NULL);                // 先把前面一次的音乐关闭
+		mciSendString(cmdString1, NULL, 0, NULL);                          // 打开音乐
+		mciSendString(_T("play tmpmusic"), NULL, 0, NULL);                 // 仅播放一次
 	}
 };
 
@@ -95,6 +106,7 @@ IMAGE im_bk, im_bullet, im_rocket, im_blowup, im_blood;  //
 Bullet bullet[MaxBulletNum]; // 
 Rocket rocket;  // 
 int bulletNum = 0; // 
+int standtime = 0;
 
 void startup()  //  
 {
@@ -111,7 +123,11 @@ void startup()  //
 	rocket.life = 5;
 	rocket.im_blood = im_blood;
 
+	mciSendString(_T("open material\\bgm.mp3 alias bk"), NULL, 0, NULL);
+	mciSendString(_T("play bk repeat"), NULL, 0, NULL);
+
 	initgraph(WIDTH, HEIGHT); //
+	setbkmode(TRANSPARENT);
 	BeginBatchDraw(); // 
 }
 
@@ -119,6 +135,10 @@ void show()  //
 {
 	putimage(0, 0, &im_bk);	// 
 	rocket.draw();  // 
+	settextstyle(20, 0, _T("宋体"));
+	TCHAR count_char[10];
+	swprintf_s(count_char, _T("TIME: %d"), standtime);
+	outtextxy(WIDTH - 100, 10, count_char);
 	for (int i = 0; i < bulletNum; i++)
 		bullet[i].draw();  // 
 	FlushBatchDraw(); // 
@@ -133,6 +153,7 @@ void updateWithoutInput() //
 	clock_t now = clock(); // 
 	// 
 	nowSecond = (int(now - start) / CLOCKS_PER_SEC);
+	standtime = nowSecond;
 	if (nowSecond == lastSecond + 2) //
 	{
 		lastSecond = nowSecond; // 
@@ -172,15 +193,27 @@ void updateWithInput()               //
 	}
 }
 
+void endgame()
+{
+	settextstyle(50, 0, _T("宋体"));
+	outtextxy(180, 350, _T("GAME OVER"));
+	FlushBatchDraw();
+	cleardevice();
+	while (true);
+	getchar();
+}
+
 int main() // 
 {
 	startup();  // 
-	while (rocket.life != 0)  // 
+	while (1)  // 
 	{
 		show();  // 
-		//std::cout << rocket.life << std::endl;
+		if (rocket.life == 0)
+			break;
 		updateWithoutInput();  //
 		updateWithInput();  // 
 	}
+	endgame();
 	return 0;
 }

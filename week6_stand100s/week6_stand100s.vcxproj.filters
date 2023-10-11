@@ -50,4 +50,12 @@
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="material\bgm.mp3">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="material\boom.mp3">
+      <Filter>资源文件</Filter>
+    </Media>
+  </ItemGroup>
 </Project>
