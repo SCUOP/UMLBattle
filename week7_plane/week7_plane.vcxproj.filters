@@ -24,4 +24,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="material\bk.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bullet.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\enemy.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\enemy_bullet.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\player.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

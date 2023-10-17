@@ -167,7 +167,7 @@ int main()
 		//	Add a bullet every 500ms
 		tt2 = GetTickCount();
 		if (tt2 - tt1 >= 500) {
-			bulletList.push_back(Node(myPlane.x + 20, myPlane.y - 20));
+			bulletList.push_back(Node(myPlane.x + 16, myPlane.y - 20));
 			tt1 = tt2;
 		}
 
@@ -179,7 +179,7 @@ int main()
 			while (pDj != enemyPlaneList.end())
 			{
 				if (rand() % 2 == 0)
-					enemyBulletList.push_back(Node(pDj->x + 20, pDj->y + 18 + 10));
+					enemyBulletList.push_back(Node(pDj->x + 15, pDj->y + 18 + 10));
 				++pDj;
 			}
 			et1 = et2;

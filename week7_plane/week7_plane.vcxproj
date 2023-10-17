@@ -132,6 +132,13 @@
   <ItemGroup>
     <ClCompile Include="plane.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="material\bk.png" />
+    <Image Include="material\bullet.png" />
+    <Image Include="material\enemy.png" />
+    <Image Include="material\enemy_bullet.png" />
+    <Image Include="material\player.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
