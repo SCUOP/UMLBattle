@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stickmanAdventures.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EasyXPng.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="material\bat.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bat0.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bat1.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bat2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bat3.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\bat4.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\jumpleft.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\jumpright.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\land.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape1.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape3.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape4.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape5.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape6.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape7.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape8.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\landscape9.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft0.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft1.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft3.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft4.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft5.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft6.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runleft7.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright0.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright1.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright3.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright4.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright5.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright6.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\runright7.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\standleft.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\standright.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="material\star.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
