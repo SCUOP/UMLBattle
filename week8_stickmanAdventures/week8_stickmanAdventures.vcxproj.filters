@@ -140,4 +140,15 @@
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="material\warning.mp3">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="material\game_music.mp3">
+      <Filter>资源文件</Filter>
+    </Media>
+    <Media Include="material\success.mp3">
+      <Filter>资源文件</Filter>
+    </Media>
+  </ItemGroup>
 </Project>

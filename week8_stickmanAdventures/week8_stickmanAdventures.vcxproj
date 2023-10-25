@@ -172,6 +172,11 @@
     <Image Include="material\standright.png" />
     <Image Include="material\star.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="material\game_music.mp3" />
+    <Media Include="material\success.mp3" />
+    <Media Include="material\warning.mp3" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

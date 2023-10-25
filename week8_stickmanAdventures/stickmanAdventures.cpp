@@ -11,6 +11,15 @@ using namespace std;
 #define WIDTH 800
 #define HEIGHT 600
 
+void PlayMusicOnce(TCHAR fileName[80]) // 播放一次音乐函数
+{
+    TCHAR cmdString1[50];
+    _stprintf(cmdString1, _T("open %s alias tmpmusic"), fileName); // 生成命令字符串
+    mciSendString(_T("close tmpmusic"), NULL, 0, NULL);            // 先把前面一次的音乐关闭
+    mciSendString(cmdString1, NULL, 0, NULL);                      // 打开音乐
+    mciSendString(_T("play tmpmusic"), NULL, 0, NULL);             // 仅播放一次
+}
+
 enum PlayerStatus // 枚举类型，游戏角色所有的可能状态
 {
     standleft, standright, runleft, runright, jumpleft, jumpright, die
@@ -211,7 +220,7 @@ public:
         width = im_standright.getwidth(); // 获得图像的宽、高，所有动画图片大小一样
         height = im_standright.getheight();
 
-        TCHAR filename[80];
+        TCHAR filename[50];
         for (int i = 0; i <= 7; i++) // 把向右奔跑的八张图片对象添加到ims_runright中
         {
             _stprintf(filename, _T("material\\runright%d.png"), i);
@@ -391,6 +400,18 @@ Timer timer;   // 用于精确延时
 
 void startup() // 初始化
 {
+    scene.level = 3;
+    Land land;
+    scene.lands.push_back(land);
+    srand(time(0));           // 初始化随机数种子
+    scene.initialize();       // 场景初始化
+    player.initialize();      // 玩家角色初始化
+    initgraph(WIDTH, HEIGHT); // 新开一个画面
+    BeginBatchDraw();         // 开始批量绘制
+}
+
+void startup2() // 初始化
+{
 
     srand(time(0));           // 初始化随机数种子
     scene.initialize();       // 场景初始化
@@ -407,6 +428,14 @@ void show() // 显示
     timer.Sleep(50);                                                     // 暂停若干毫秒
 }
 
+void show2() // 显示
+{
+    scene.draw(player.x_left - WIDTH / 2, player.y_bottom - HEIGHT / 2); // 显示场景相关信息
+    player.draw();                                                       // 显示玩家相关信息
+    FlushBatchDraw();                                                    // 批量绘制
+    timer.Sleep(50);                                                     // 暂停若干毫秒
+}
+
 void updateWithoutInput() // 和输入无关的更新
 {
     player.updateYcoordinate(scene); // 游戏角色y坐标是每帧自动更新的
@@ -415,10 +444,10 @@ void updateWithoutInput() // 和输入无关的更新
     // 到达终点
     if (player.x_left > scene.lands[landSize - 1].left_x && abs(player.y_bottom - scene.lands[landSize - 1].top_y) <= 2)
     {
+        TCHAR filename[50];
+        _stprintf(filename, _T("material\\success.mp3"));
+        PlayMusicOnce(filename);
         scene.lastlevel = scene.level; 
-        scene.level++;                 
-        scene.initialize(); // 下一关 
-        player.initialize();        
     }
     else if (player.y_bottom > 1.5 * HEIGHT) // 角色掉落
     {
@@ -432,6 +461,47 @@ void updateWithoutInput() // 和输入无关的更新
         scene.enemies[i].update(); 
         if (player.isCollide(scene.enemies[i]))
         {
+            TCHAR filename[50];
+            _stprintf(filename, _T("material\\warning.mp3"));
+            PlayMusicOnce(filename);
+            scene.lastlevel = scene.level;
+            scene.initialize();
+            player.initialize();
+        }
+    }
+}
+
+void updateWithoutInput2() // 和输入无关的更新
+{
+    player.updateYcoordinate(scene); // 游戏角色y坐标是每帧自动更新的
+
+    int landSize = scene.lands.size();
+    // 到达终点
+    if (player.x_left > scene.lands[landSize - 1].left_x && abs(player.y_bottom - scene.lands[landSize - 1].top_y) <= 2)
+    {
+        TCHAR filename[50];
+        _stprintf(filename, _T("material\\success.mp3"));
+        PlayMusicOnce(filename);
+        scene.lastlevel = scene.level;
+        scene.level++;
+        scene.initialize(); // 下一关 
+        player.initialize();
+    }
+    else if (player.y_bottom > 1.5 * HEIGHT) // 角色掉落
+    {
+        scene.lastlevel = scene.level;
+        scene.initialize();            // 重置
+        player.initialize();
+    }
+
+    for (int i = 0; i < scene.enemies.size(); i++) //碰撞检测
+    {
+        scene.enemies[i].update();
+        if (player.isCollide(scene.enemies[i]))
+        {
+            TCHAR filename[50];
+            _stprintf(filename, _T("material\\warning.mp3"));
+            PlayMusicOnce(filename);
             scene.lastlevel = scene.level;
             scene.initialize();
             player.initialize();
@@ -445,16 +515,32 @@ void updateWithInput() // 和输入有关的更新
 
     if (_kbhit()) // 当按键时，切换角色显示图片，更改位置
     {
+        //if (GetAsyncKeyState(VK_RIGHT) || GetAsyncKeyState('D')) // 按下D键或右方向键
+        //    player.runRight(scene);
+        //else if (GetAsyncKeyState(VK_LEFT) || GetAsyncKeyState('A')) // 按下A键或左方向键
+        //    player.runLeft(scene);
+        char input = _getch();
+        if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState('W') || input == ' ') // 按下W键或上方向键
+            player.beginJump();
+    }
+    player.runRight(scene);
+}
+
+void updateWithInput2() // 和输入有关的更新
+{
+    player.standStill(); // 游戏角色默认为向左或向右静止站立
+
+    if (_kbhit()) // 当按键时，切换角色显示图片，更改位置
+    {
         if (GetAsyncKeyState(VK_RIGHT) || GetAsyncKeyState('D')) // 按下D键或右方向键
             player.runRight(scene);
         else if (GetAsyncKeyState(VK_LEFT) || GetAsyncKeyState('A')) // 按下A键或左方向键
             player.runLeft(scene);
-
-        if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState('W')) // 按下W键或上方向键
+        char input = _getch();
+        if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState('W') || input == ' ') // 按下W键或上方向键
             player.beginJump();
     }
 }
-
 int main() // 主函数
 {
     startup(); // 初始化
