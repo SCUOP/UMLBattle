@@ -39,31 +39,31 @@ public:
     }
 };
 
-class Enemy // 敌人类
+class Enemy // 敌人
 {
 public:
-    IMAGE im_enemy;                  // 敌人图像
-    float x, y;                      // 用来刻画敌人的中心坐标
-    float enemy_width, enemy_height; // 敌人图像的宽度、高度
-    float x_min, x_max;              // 敌人移动的x坐标最大值、最小值
-    float vx;                        // 敌人在x方向的移动速度
+    IMAGE im_enemy;               
+    int x, y;                      
+    int width, height; 
+    int min, max;
+    int vx;                        
 
     void initialize() // 初始化
     {
         loadimage(&im_enemy, _T("material\\bat.png")); // 导入敌人-蝙蝠-图片
-        enemy_width = im_enemy.getwidth();   // 获得图像的宽、高
-        enemy_height = im_enemy.getheight();
+        width = im_enemy.getwidth();   // 获得图像的宽、高
+        height = im_enemy.getheight();
     }
 
     void draw(float px, float py) // 显示相关信息
     {
-        putimagePng(x - enemy_width / 2 - px, y - enemy_height / 2 - py, &im_enemy); // 角色不动，绘制敌人有一个相对偏移量
+        putimagePng(x - width / 2 - px, y - height / 2 - py, &im_enemy);
     }
 
     void update() // 敌人在一定范围内，左右移动
     {
         x += vx;
-        if (x > x_max || x < x_min)
+        if (x > max || x < min)
             vx = -vx;
     }
 };
@@ -90,7 +90,7 @@ public:
         for (int i = 0; i < enemies.size(); i++)
             enemies[i].draw(px, py); // 绘制所有敌人
 
-        // 在最后一个地面上方，放一个星星
+        // 终点
         putimagePng(lands[lands.size() - 1].left_x + im_star.getwidth() - px,
             lands[lands.size() - 1].top_y - im_star.getheight() - py, &im_star);
 
@@ -110,7 +110,7 @@ public:
         loadimage(&im_bk, filename);
         loadimage(&im_star, _T("material\\star.png"));
 
-        if (lands.size() == 0) // 游戏才开始，默认第一关
+        if (lands.size() == 0)
         {
             level = 1;
             lastlevel = 1;
@@ -118,13 +118,13 @@ public:
 
         if (lands.size() == 0 || level > lastlevel)
         {
-            lands.clear(); // 先清空掉vector
+            lands.clear(); // 重置板
             // 前后迭代画板;
             Land beforeLand;
             beforeLand.initialize();
             lands.push_back(beforeLand);
 
-            for (int i = 1; i < 10; i++)
+            for (int i = 1; i < 10 + level; i++)
             {
                 Land afterLand;
                 afterLand.initialize();
@@ -155,23 +155,22 @@ public:
             enemies.clear();
             // 敌人数目
             int numEnemy = level - 1;
-            int idStep = lands.size() / (numEnemy + 1);
-            for (int j = 1; j <= numEnemy; j++)
+            int enemyIndex = lands.size() / (numEnemy + 1);
+            for (int i = 1; i <= numEnemy; i++)
             {
                 Enemy enemy;
                 enemy.initialize();
-                int landId = j * idStep;
-                enemy.x = lands[landId].left_x + lands[landId].land_width / 2;
-                enemy.y = lands[landId].top_y - enemy.enemy_height;
-
-                float movingRange = enemy.enemy_width * (3 + level / 15.0); // 敌人的移动范围，逐渐变大
-                enemy.x_min = enemy.x - movingRange;                        // 得到敌人移动的x范围
-                enemy.x_max = enemy.x + movingRange;
-                enemy.vx = 2 + level / 10.0; // 敌人x方向上的移动速度，逐渐变快
+                int landIndex = i * enemyIndex;
+                enemy.x = lands[landIndex].left_x + lands[landIndex].land_width / 2;
+                enemy.y = lands[landIndex].top_y - enemy.height;
+                // 根据level加强敌人
+                enemy.min = enemy.x - (rand() % level + 2) * enemy.width;
+                enemy.max = enemy.x + (rand() % level + 2) * enemy.width;
+                enemy.vx = 2 + rand() % level;
 
                 enemies.push_back(enemy);
             }
-        } // if (lands.size()==0 || level > lastlevel)
+        }
     }
 };
 
@@ -194,7 +193,7 @@ public:
 
     void draw() // 显示相关信息
     {
-        // 游戏中显示角色，角色不动，地面、背景相对运动
+        // 角色在游戏中心
         putimagePng(WIDTH / 2, HEIGHT / 2 - height, &im_show);
     }
 
@@ -330,11 +329,11 @@ public:
         }
     }
 
-    int isCollideEnemy(Enemy& enemy) // 判断角色是否和敌人碰撞，如果是返回1，否则返回0
+    int isCollide(Enemy& enemy) // 判断角色是否和敌人碰撞，如果是返回1，否则返回0
     {
         float x_center = x_left + width / 2;
         float y_center = y_bottom - height / 2;
-        if (abs(enemy.x - x_center) <= enemy.enemy_width * 0.5 && abs(enemy.y - y_center) <= enemy.enemy_height * 0.5)
+        if (abs(enemy.x - x_center) <= enemy.width * 0.5 && abs(enemy.y - y_center) <= enemy.height * 0.5)
             return 1;
         else
             return 0;
@@ -367,8 +366,8 @@ public:
     {
         if (playerStatus == jumpleft || playerStatus == jumpright) // 当前是在空中跳跃状态
         {
-            vy += gravity;                               // y方向速度受重力影响变化
-            y_bottom += vy;                              // y方向位置受速度影响变化
+            vy += gravity; // y方向速度受重力影响变化
+            y_bottom += vy; // y方向位置受速度影响变化
             for (int i = 0; i < scene.lands.size(); i++) // 对所有地面遍历
             {
                 if (isOnLand(scene.lands[i], vy)) // 当火柴人正好站在一个地面上时
@@ -412,31 +411,30 @@ void updateWithoutInput() // 和输入无关的更新
 {
     player.updateYcoordinate(scene); // 游戏角色y坐标是每帧自动更新的
 
-    int landSize = scene.lands.size(); // 场景中地面的个数
-    // 角色跑到最后一个地面上了，游戏胜利
+    int landSize = scene.lands.size();
+    // 到达终点
     if (player.x_left > scene.lands[landSize - 1].left_x && abs(player.y_bottom - scene.lands[landSize - 1].top_y) <= 2)
     {
-        scene.lastlevel = scene.level; // 记录lastlevel
-        scene.level++;                 // 进入下一关
-        scene.initialize();            // 场景初始化
-        player.initialize();           // 玩家角色初始化
+        scene.lastlevel = scene.level; 
+        scene.level++;                 
+        scene.initialize(); // 下一关 
+        player.initialize();        
     }
-    else if (player.y_bottom > 1.5 * HEIGHT) // 角色落到底面，游戏失败，重新开始
+    else if (player.y_bottom > 1.5 * HEIGHT) // 角色掉落
     {
-        scene.lastlevel = scene.level; // 重新玩没有玩过的一关
-        scene.initialize();            // 场景初始化
-        player.initialize();           // 玩家角色初始化
+        scene.lastlevel = scene.level;
+        scene.initialize();            // 重置
+        player.initialize();  
     }
 
-    for (int i = 0; i < scene.enemies.size(); i++)
+    for (int i = 0; i < scene.enemies.size(); i++) //碰撞检测
     {
-        scene.enemies[i].update(); // 所有敌人自动更新位置
-        // 如果任一敌人和玩家碰撞，游戏失败
-        if (player.isCollideEnemy(scene.enemies[i]))
+        scene.enemies[i].update(); 
+        if (player.isCollide(scene.enemies[i]))
         {
             scene.lastlevel = scene.level;
-            scene.initialize();  // 场景初始化
-            player.initialize(); // 玩家角色初始化
+            scene.initialize();
+            player.initialize();
         }
     }
 }
@@ -465,6 +463,14 @@ int main() // 主函数
         show();               // 显示
         updateWithoutInput(); // 与输入无关的更新
         updateWithInput();    // 与输入有关的更新
+        if (scene.level == 10)
+            break;
     }
+    settextstyle(50, 0, _T("宋体"));
+    outtextxy(WIDTH / 2 - 100, HEIGHT / 2 - 50, _T("GAME OVER"));
+    FlushBatchDraw();
+    cleardevice();
+    while (true);
+    getchar();
     return 0;
 }
