@@ -6,15 +6,46 @@ import math
 WIDTH = 480  # 设置窗口的宽度
 HEIGHT = 700  # 设置窗口的高度
 TITLE = "Python Game"
-score = 0  # 游戏得分
-isLoose = False  # 游戏是否失败，初始不失败
+# score = 0  # 游戏得分
+# isLoose = False  # 游戏是否失败，初始不失败
 # sounds.game_music.play(-1)  # 循环播放背景音乐
 
-
+class Game:
+    """game elements
+    """
+    WIDTH = WIDTH  # set width of window
+    HEIGHT = HEIGHT  # set height of window
+    TITLE = TITLE # set title of window
+    deviation = 20  # map enlargement deviation value
+    actors = []
+    background = None
+    hero = None
+    start_button = None
+    enemise = []
+    lose = False
+    start = False
+    @staticmethod
+    def update():
+        if Game.lose:
+            Game.deal_lose()
+            return
+        Game.actors = []
+        if Game.background != None:
+            Game.actors += [Game.background]
+        if Game.hero != None:
+            Game.actors += [Game.hero]
+        if Game.start_button != None:
+            Game.actors += [Game.start_button]
+        if Game.enemise != None:
+            Game.actors += Game.enemise
+    @staticmethod
+    def deal_lose():
+        # deal when the player lose game
+        # TODO:
+        pass
+            
 # interface of all kinds of actors
 class AllActors(ABC):
-    actors = []
-
     # draw
     @abstractmethod
     def draw(self):
@@ -29,23 +60,29 @@ class AllActors(ABC):
     def get_actor(self):
         pass
 
-
 class BackGround(AllActors):
-    WIDTH = WIDTH  # 设置窗口的宽度
-    HEIGHT = HEIGHT  # 设置窗口的高度
-    TITLE = TITLE
-    background1 = Actor("background")  # 导入背景1图片
-    background1.x = 480 / 2  # 背景1的x坐标
-    background1.y = 852 / 2  # 背景1的y坐标
-    background2 = Actor("background")  # 导入背景2图片
-    background2.x = 480 / 2  # 背景2的x坐标
-    background2.y = -852 / 2  # 背景2的y坐标
-    deviation = -20  # 偏差值，子弹出边界销毁
-
-
+    def __init__(self) -> None:
+        self.background1 = Actor("background")  # 导入背景1图片
+        self.background1.x = self.background1.width / 2  # 背景1的x坐标
+        self.background1.y = self.background1.height / 2  # 背景1的y坐标
+        self.background2 = Actor("background")  # 导入背景2图片
+        self.background2.x = self.background2.width / 2  # 背景2的x坐标
+        self.background2.y = -self.background2.height / 2  # 背景2的y坐标
+    def draw(self):
+        self.background1.draw()  # 绘制游戏背景
+        self.background2.draw()  # 绘制游戏背景
+    def update(self):
+        # 以下代码用于实现背景图片的循环滚动效果
+        if self.background1.y > 852 / 2 + 852:
+            self.background1.y = -852 / 2  # 背景1移动到背景2的正上方
+        if self.background2.y > 852 / 2 + 852:
+            self.background2.y = -852 / 2  # 背景2移动到背景1的正上方
+        self.background1.y += 1  # 背景1向下滚动
+        self.background2.y += 1  # 背景2向下滚动
+    def get_actor(self):
+        pass
+        
 class Start_Button(AllActors):
-    start = False
-
     def __init__(self) -> None:
         self.start_no = Actor("start_no")
         self.start_no.x = WIDTH / 2
@@ -62,21 +99,51 @@ class Start_Button(AllActors):
         if keyboard.RETURN and self.start_pic == self.start_no:
             self.start_pic = self.start_yes
         elif not keyboard.RETURN and self.start_pic == self.start_yes:
-            Start_Button.start = True
+            Game.start_button = None
+            Game.start = True
 
     def get_actor(self):
         return self.start_pic
 
+# the blood of actor
+class HP(AllActors):
+    def __init__(self, blood: int, attach_target: Actor, size: int = 5) -> None:
+        """HP of each actor
 
+        Args:
+            blood (int): blood
+            attach_target (Actor): the actor of the target which is the owner of this HP instance
+            size (int): the height of the blood strip. Defaults to 5.
+        """
+        self.full_blood = blood
+        self.now_blood = self.full_blood
+        self.left = attach_target.left
+        self.right = attach_target.right
+        self.top = attach_target.bottom
+        self.bottom = self.top + size
+        self.height = size
+        self.width = self.right - self.left
+        self.health_width = self.width * (self.now_blood * 1.0 / self.full_blood)
+        
+    def draw(self):
+        screen.draw.rect(Rect(self.left, self.top, self.width, self.height), 'white')
+        screen.draw.filled_rect(Rect(self.left, self.top, self.health_width, self.height), 'red')
+        
+    def update(self):
+        pass
+    
+    def get_actor(self):
+        pass
+        
 # super class for all kinds of bullets
 class Bullets(AllActors):
     def check_collision(actor):
         pass
 
-
+# The most common bullet
 class Basic_Bullets(Bullets):
     def __init__(
-        self, shoot_pos: tuple, v: tuple = (0, 4), target_pos: tuple = None
+        self, shoot_pos: tuple, target_pos: tuple = None
     ) -> None:
         """Basic_Bullets init
 
@@ -88,11 +155,12 @@ class Basic_Bullets(Bullets):
         self.bullet = Actor("bullet")
         self.bullet.x = shoot_pos[0]
         self.bullet.y = shoot_pos[1]
-        self.bullet.vx = v[0]
-        self.bullet.vy = v[1]
         self.exsit = True  # determine whether the bullet is exsit
+        self.abs_v = 4 # absolute speed
         if target_pos is not None:
-            self.bullet.angle = self.bullet.angle_to(target_pos)
+            self.bullet.angle = self.bullet.angle_to(target_pos) + 90
+        self.bullet.vx = self.abs_v * math.sin(math.radians(self.bullet.angle))
+        self.bullet.vy = self.abs_v * math.cos(math.radians(self.bullet.angle))
 
     def draw(self):
         self.bullet.draw()
@@ -106,39 +174,89 @@ class Basic_Bullets(Bullets):
         return self.bullet
 
     def check_collision(self, actor):
-        self.bullet.colliderect(actor)
+        if self.bullet.colliderect(actor):
+            self.exsit = False
 
     def check_boundary(self):
         # out of boundary
         if (
-            self.bullet.x < -BackGround.deviation
-            or self.bullet.x > BackGround.WIDTH + BackGround.deviation
-            or self.bullet.y > BackGround.HEIGHT + BackGround.deviation
-            or self.bullet.y < -BackGround.deviation
+            self.bullet.x < -Game.deviation
+            or self.bullet.x > Game.WIDTH + Game.deviation
+            or self.bullet.y > Game.HEIGHT + Game.deviation
+            or self.bullet.y < -Game.deviation
         ):
             self.exsit = False
-
+    def check_exsit(self):
+        return self.exsit
 
 # player
 class Hero(AllActors):
     def __init__(self) -> None:
         self.hero = Actor("hero")
-        self.hero.x = BackGround.WIDTH / 2
-        self.hero.y = BackGround.HEIGHT * 2 / 3
+        self.hero.x = Game.WIDTH / 2
+        self.hero.y = Game.HEIGHT * 2 / 3
         self.hero.speed = 3
         self.bullets = []
         self.bullet_class = Basic_Bullets
+        self.attack_speed = 0.8 # gap time for each bullet
+        self.attacking = False # if hero attacking, stop add attacking schedule
+        self.nearest = None
 
     def draw(self):
         self.hero.draw()
+        for bullet in self.bullets:
+            bullet.draw()
 
     def update(self):
         self.key_down()
+        for bullet in self.bullets:
+            bullet.update()
+            if not bullet.check_exsit():
+                self.bullets.remove(bullet)
+        distance = 99999
+        # traverse enemies to get the nearest enemy and check the collision with bullets
+        for actor in Game.enemise:
+            if self.hero.distance_to(actor.get_actor()) < distance:
+                distance = self.hero.distance_to(actor.get_actor())
+                self.nearest = actor
+            for bullet in self.bullets:
+                bullet.check_collision(actor.get_actor())
+        self.check_boundary()
 
     def get_actor(self) -> Actor:
         return self.hero
 
-    def key_down(self):  # When key down
+    def key_down(self):  # check key down
+        if self.press_key():
+            self.attacking = False
+            clock.unschedule(self.attack)
+        else:
+            # face the nearest enemy
+            if self.nearest != None:
+                self.hero.angle = self.hero.angle_to(self.nearest.get_actor()) - 90
+            # shoot when the player dosen't move
+            if not self.attacking:
+                clock.schedule_interval(self.attack, self.attack_speed)
+                self.attacking = True
+
+    def attack(self):  # shoot
+        distance = self.hero.height / 2
+        pos = (self.hero.x - distance * math.sin(math.radians(self.hero.angle)), self.hero.y - distance * math.cos(math.radians(self.hero.angle)))
+        self.bullets.append(self.bullet_class(pos, self.nearest.get_actor().pos))
+
+    def check_boundary(self):
+        if self.hero.left < 0:
+            self.hero.left = 0
+        if self.hero.right > Game.WIDTH:
+            self.hero.right = Game.WIDTH
+        if self.hero.bottom > Game.HEIGHT:
+            self.hero.bottom = Game.HEIGHT
+        if self.hero.top < 0:
+            self.hero.top = 0
+    
+    def press_key(self):
+        if not keyboard.UP and not keyboard.DOWN and not keyboard.LEFT and not keyboard.RIGHT:
+            return False
         if keyboard.UP:
             self.hero.y -= self.hero.speed
             if keyboard.LEFT:
@@ -165,113 +283,68 @@ class Hero(AllActors):
         elif keyboard.RIGHT:
             self.hero.x += self.hero.speed
             self.hero.angle = 270
-        else:
-            distance = 99999
-            nearest = None
-            for actor in AllActors.actors:
-                if (
-                    actor.get_actor().image != "hero"
-                    and self.hero.distance_to(actor.get_actor()) < distance
-                ):
-                    distance = self.hero.distance_to(actor.get_actor())
-                    nearest = actor
-            self.hero.angle = self.hero.angle_to(nearest.get_actor()) - 90
-            # shoot when the player dosen't move
-            self.attack()
-        self.check_boundary()
-
-    def attack(self):  # shoot
-        return
-        distance = self.hero.height / 3 * 2
-        pos = distance * math.sin(distance)
-        # TODO:
-        self.bullets.append(self.bullet_class())
-
-    def check_boundary(self):
-        if self.hero.left < 0:
-            self.hero.left = 0
-        if self.hero.right > BackGround.WIDTH:
-            self.hero.right = BackGround.WIDTH
-        if self.hero.bottom > BackGround.HEIGHT:
-            self.hero.bottom = BackGround.HEIGHT
-        if self.hero.top < 0:
-            self.hero.top = 0
-
-
-hero = Hero()
-
+        return True
 
 class Enemy(AllActors):
-    def attack():
+    def attack(self):
         pass
 
-
+# the most common enemy
 class Basic_Enemy(Enemy):
+    
     def __init__(self) -> None:
         self.enemy = Actor("enemy")
-        self.enemy.x = BackGround.WIDTH / 2
-        self.enemy.y = BackGround.HEIGHT / 4
-
+        self.enemy.x = Game.WIDTH / 2
+        self.enemy.y = Game.HEIGHT / 4
+        self.bullets = []
+        self.bullet_class = Basic_Bullets
+        self.attack_speed = 1.5 # gap time for each bullet
+        self.attacking = False        
+        
     def draw(self):
         self.enemy.draw()
+        for bullet in self.bullets:
+            bullet.draw()
 
     def update(self):
         # enemy towards the player
-        for actor in AllActors.actors:
-            if actor.get_actor().image == "hero":
-                self.enemy.angle = self.enemy.angle_to(actor.get_actor()) + 90
-                break
-
+        if Game.hero != None:
+            self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+        if not self.attacking:
+            clock.schedule_interval(self.attack, self.attack_speed)
+            self.attacking = True
+        for bullet in self.bullets:
+            bullet.update()
+            bullet.check_collision(Game.hero.get_actor())
+            if not bullet.check_exsit():
+                self.bullets.remove(bullet)
+    
+    def attack(self):  # shoot
+        distance = self.enemy.height / 2
+        pos = (self.enemy.x + distance * math.sin(math.radians(self.enemy.angle)), self.enemy.y + distance * math.cos(math.radians(self.enemy.angle)))
+        self.bullets.append(self.bullet_class(pos, Game.hero.get_actor().pos))
+    
     def get_actor(self):
         return self.enemy
 
-    def attack():
-        pass
-
-
-start_button = Start_Button()
-AllActors.actors.append(hero)
-AllActors.actors.append(Basic_Enemy())
-
+# TODO: init game
+Game.background = BackGround()
+Game.start_button = Start_Button()
+Game.hero = Hero()
+Game.enemise.append(Basic_Enemy())
+Game.update()
 
 def draw():  # 绘制模块，每帧重复执行
-    global start, start_pic
-    BackGround.background1.draw()  # 绘制游戏背景
-    BackGround.background2.draw()  # 绘制游戏背景
-    for actor in AllActors.actors:
+    for actor in Game.actors:
         actor.draw()
-    # 下面显示得分
-    screen.draw.text(
-        "得分: " + str(score),
-        (200, BackGround.HEIGHT - 50),
-        fontsize=30,
-        fontname="s",
-        color="black",
-    )
-    if isLoose:  # 游戏失败后输出信息
-        screen.draw.text(
-            "游戏失败！", (50, BackGround.HEIGHT / 2), fontsize=90, fontname="s", color="red"
-        )
-    if not Start_Button.start:
-        start_button.draw()
-
 
 def update():  # 更新模块，每帧重复操作
-    global score, isLoose, bullets, start
-    if not Start_Button.start:
-        start_button.update()
-        return
-    if isLoose:
-        return  # 如果游戏失败，返回，不做下面的操作
-    for actor in AllActors.actors:
-        actor.update()
-    # 以下代码用于实现背景图片的循环滚动效果
-    if BackGround.background1.y > 852 / 2 + 852:
-        BackGround.background1.y = -852 / 2  # 背景1移动到背景2的正上方
-    if BackGround.background2.y > 852 / 2 + 852:
-        BackGround.background2.y = -852 / 2  # 背景2移动到背景1的正上方
-    BackGround.background1.y += 1  # 背景1向下滚动
-    BackGround.background2.y += 1  # 背景2向下滚动
-
+    Game.update()
+    if not Game.lose:
+        if not Game.start:
+            Game.start_button.update()
+        else:
+            for actor in Game.actors:
+                actor.update()
 
 pgzrun.go()  # begin gaming
