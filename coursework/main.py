@@ -36,7 +36,7 @@ class Game:
             Game.actors += [Game.hero]
         if Game.start_button != None:
             Game.actors += [Game.start_button]
-        if Game.enemise != None:
+        if Game.enemise != None and Game.enemise != []:
             Game.actors += Game.enemise
     @staticmethod
     def deal_lose():
@@ -45,7 +45,7 @@ class Game:
         pass
             
 # interface of all kinds of actors
-class AllActors(ABC):
+class All_Actors(ABC):
     # draw
     @abstractmethod
     def draw(self):
@@ -60,7 +60,7 @@ class AllActors(ABC):
     def get_actor(self):
         pass
 
-class BackGround(AllActors):
+class BackGround(All_Actors):
     def __init__(self) -> None:
         self.background1 = Actor("background")  # 导入背景1图片
         self.background1.x = self.background1.width / 2  # 背景1的x坐标
@@ -82,7 +82,7 @@ class BackGround(AllActors):
     def get_actor(self):
         pass
         
-class Start_Button(AllActors):
+class Start_Button(All_Actors):
     def __init__(self) -> None:
         self.start_no = Actor("start_no")
         self.start_no.x = WIDTH / 2
@@ -96,23 +96,26 @@ class Start_Button(AllActors):
         self.start_pic.draw()
 
     def update(self):
+        self.check_keyboard()
+
+    def get_actor(self):
+        return self.start_pic
+    
+    def check_keyboard(self):
         if keyboard.RETURN and self.start_pic == self.start_no:
             self.start_pic = self.start_yes
         elif not keyboard.RETURN and self.start_pic == self.start_yes:
             Game.start_button = None
             Game.start = True
 
-    def get_actor(self):
-        return self.start_pic
-
 # the blood of actor
-class HP(AllActors):
-    def __init__(self, blood: int, attach_target: Actor, size: int = 5) -> None:
+class HP():
+    def __init__(self, blood: int, attach_target: All_Actors, size: int = 5) -> None:
         """HP of each actor
 
         Args:
             blood (int): blood
-            attach_target (Actor): the actor of the target which is the owner of this HP instance
+            attach_target (All_Actors): the actor of the target which is the owner of this HP instance
             size (int): the height of the blood strip. Defaults to 5.
         """
         self.full_blood = blood
@@ -131,13 +134,10 @@ class HP(AllActors):
         
     def update(self):
         pass
-    
-    def get_actor(self):
-        pass
         
 # super class for all kinds of bullets
-class Bullets(AllActors):
-    def check_collision(actor):
+class Bullets(All_Actors):
+    def check_collision(self, actor):
         pass
 
 # The most common bullet
@@ -166,15 +166,23 @@ class Basic_Bullets(Bullets):
         self.bullet.draw()
 
     def update(self):
-        self.bullet.x += self.bullet.vx
-        self.bullet.y += self.bullet.vy
+        self.update_pos()
         self.check_boundary()
 
+    def update_pos(self):
+        self.bullet.x += self.bullet.vx
+        self.bullet.y += self.bullet.vy        
+    
     def get_actor(self):
         return self.bullet
 
-    def check_collision(self, actor):
-        if self.bullet.colliderect(actor):
+    def check_collision(self, actor: All_Actors):
+        """check cpllision
+
+        Args:
+            actor (All_Actors): the bullet target
+        """
+        if self.bullet.colliderect(actor.get_actor()):
             self.exsit = False
 
     def check_boundary(self):
@@ -190,7 +198,8 @@ class Basic_Bullets(Bullets):
         return self.exsit
 
 # player
-class Hero(AllActors):
+#TODO: 删除时记得取消schedule
+class Hero(All_Actors):
     def __init__(self) -> None:
         self.hero = Actor("hero")
         self.hero.x = Game.WIDTH / 2
@@ -204,33 +213,45 @@ class Hero(AllActors):
 
     def draw(self):
         self.hero.draw()
-        for bullet in self.bullets:
-            bullet.draw()
+        self.draw_bullets()
 
     def update(self):
-        self.key_down()
+        self.update_bullets()
+        # traverse enemies to get the nearest enemy and check the collision with bullets
+        self.check_enemies()
+        # avoid leaving the map
+        self.check_boundary()
+        # check the keyboard
+        self.check_keyboard()
+
+    def get_actor(self) -> Actor:
+        return self.hero
+    
+    def draw_bullets(self):
+        for bullet in self.bullets:
+            bullet.draw()        
+    
+    def update_bullets(self):
         for bullet in self.bullets:
             bullet.update()
             if not bullet.check_exsit():
-                self.bullets.remove(bullet)
+                self.bullets.remove(bullet)        
+    # traverse enemies to get the nearest enemy and check the collision with bullets
+    def check_enemies(self):
         distance = 99999
-        # traverse enemies to get the nearest enemy and check the collision with bullets
         for actor in Game.enemise:
             if self.hero.distance_to(actor.get_actor()) < distance:
                 distance = self.hero.distance_to(actor.get_actor())
                 self.nearest = actor
             for bullet in self.bullets:
-                bullet.check_collision(actor.get_actor())
-        self.check_boundary()
-
-    def get_actor(self) -> Actor:
-        return self.hero
-
-    def key_down(self):  # check key down
+                bullet.check_collision(actor)     
+    # check keyboard event
+    def check_keyboard(self): 
         if self.press_key():
             self.attacking = False
             clock.unschedule(self.attack)
         else:
+            # if not press key, excute other events
             # face the nearest enemy
             if self.nearest != None:
                 self.hero.angle = self.hero.angle_to(self.nearest.get_actor()) - 90
@@ -238,12 +259,14 @@ class Hero(AllActors):
             if not self.attacking:
                 clock.schedule_interval(self.attack, self.attack_speed)
                 self.attacking = True
-
-    def attack(self):  # shoot
+    
+    # shoot
+    def attack(self):
         distance = self.hero.height / 2
         pos = (self.hero.x - distance * math.sin(math.radians(self.hero.angle)), self.hero.y - distance * math.cos(math.radians(self.hero.angle)))
         self.bullets.append(self.bullet_class(pos, self.nearest.get_actor().pos))
-
+    
+    # avoid leaving the map
     def check_boundary(self):
         if self.hero.left < 0:
             self.hero.left = 0
@@ -285,11 +308,12 @@ class Hero(AllActors):
             self.hero.angle = 270
         return True
 
-class Enemy(AllActors):
+class Enemy(All_Actors):
     def attack(self):
         pass
 
 # the most common enemy
+#TODO:删除时记得取消schedule
 class Basic_Enemy(Enemy):
     
     def __init__(self) -> None:
@@ -299,25 +323,40 @@ class Basic_Enemy(Enemy):
         self.bullets = []
         self.bullet_class = Basic_Bullets
         self.attack_speed = 1.5 # gap time for each bullet
-        self.attacking = False        
+        self.attacking = False  
         
     def draw(self):
         self.enemy.draw()
-        for bullet in self.bullets:
-            bullet.draw()
-
+        self.draw_bullets()
+        
     def update(self):
+        self.update_self()
+        self.update_bullets()
+    
+    def draw_bullets(self):
+        for bullet in self.bullets:
+            bullet.draw()        
+
+    def update_self(self):
+        self.adjust_angle()  
+        self.attack_schedule()
+
+    def adjust_angle(self):
         # enemy towards the player
         if Game.hero != None:
             self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+    
+    def attack_schedule(self):
         if not self.attacking:
             clock.schedule_interval(self.attack, self.attack_speed)
-            self.attacking = True
+            self.attacking = True              
+            
+    def update_bullets(self):
         for bullet in self.bullets:
             bullet.update()
-            bullet.check_collision(Game.hero.get_actor())
+            bullet.check_collision(Game.hero)
             if not bullet.check_exsit():
-                self.bullets.remove(bullet)
+                self.bullets.remove(bullet)        
     
     def attack(self):  # shoot
         distance = self.enemy.height / 2
@@ -326,6 +365,7 @@ class Basic_Enemy(Enemy):
     
     def get_actor(self):
         return self.enemy
+            
 
 # TODO: init game
 Game.background = BackGround()
