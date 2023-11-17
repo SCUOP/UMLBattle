@@ -25,12 +25,26 @@ class Game:
     enemise = []
     lose = False
     start = False
+    init = True
 
     @staticmethod
     def update():
         if Game.lose:
             Game.deal_lose()
             return
+        Game.generate_actors()
+        # while destroy all enemies, go to next level
+        if Game.enemise == []:
+            Game.next_level()
+
+    @staticmethod
+    def deal_lose():
+        # deal when the player lose game
+        # TODO:
+        Game.init = True
+
+    @staticmethod
+    def generate_actors():
         Game.actors = []
         if Game.background != None:
             Game.actors += [Game.background]
@@ -41,11 +55,28 @@ class Game:
         if Game.enemise != None and Game.enemise != []:
             Game.actors += Game.enemise
 
+    # TODO: init game
     @staticmethod
-    def deal_lose():
-        # deal when the player lose game
-        # TODO:
-        pass
+    def init_game():
+        Game.background = BackGround()
+        Game.start_button = Start_Button()
+        if Game.hero != None:
+            Game.hero.forced_kill()
+        Game.hero = Hero()
+        for enemy in Game.enemise:
+            enemy.forced_kill()
+        Game.enemise.append(Basic_Enemy())
+        Game.lose = False
+        Game.start = False
+        Game.init = False
+        Game.update()
+
+    def next_level():
+        Game.start_button = Start_Button()
+        Game.hero.forced_kill()
+        Game.enemise.append(Basic_Enemy())
+        Game.update()
+        Game.start = False
 
 
 # interface of all kinds of actors
@@ -76,6 +107,10 @@ class Actor_has_blood(All_Actors):
 
     @abstractmethod
     def update_blood_pos(self):
+        pass
+
+    @abstractmethod
+    def forced_kill(self):
         pass
 
 
@@ -263,7 +298,7 @@ class Hero(Actor_has_blood):
         self.attack_speed = 0.8  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
         self.nearest = None
-        self.hp = HP(100, self)
+        self.hp = HP(4, self)
 
     def draw(self):
         self.hp.draw()
@@ -310,8 +345,10 @@ class Hero(Actor_has_blood):
 
     def check_blood(self):
         if self.hp.get_now_blood() <= 0:
-            pass
-        # TODO: 游戏失败
+            if self.attacking == True:
+                clock.unschedule(self.attack)
+                self.attacking = False
+            Game.deal_lose()
 
     # traverse enemies to get the nearest enemy and check the collision with bullets
     def check_enemies(self):
@@ -394,6 +431,12 @@ class Hero(Actor_has_blood):
             self.hero.angle = 270
         return True
 
+    def forced_kill(self):
+        if self.attacking:
+            clock.unschedule(self.attack)
+            self.attacking = False
+        self.bullets = []
+
 
 class Enemy(Actor_has_blood):
     def attack(self):
@@ -431,6 +474,7 @@ class Basic_Enemy(Enemy):
         self.hp.decrease_blood(decrease_value)
 
     def check_blood(self):
+        # check the enemy is killed?
         if self.hp.get_now_blood() <= 0:
             if self.attacking:
                 clock.unschedule(self.attack)
@@ -475,13 +519,12 @@ class Basic_Enemy(Enemy):
     def get_actor(self):
         return self.enemy
 
-
-# TODO: init game
-Game.background = BackGround()
-Game.start_button = Start_Button()
-Game.hero = Hero()
-Game.enemise.append(Basic_Enemy())
-Game.update()
+    # only Game progress can force kill
+    def forced_kill(self):
+        if self.attacking:
+            clock.unschedule(self.attack)
+            self.attacking = False
+        Game.enemise.remove(self)
 
 
 def draw():  # 绘制模块，每帧重复执行
@@ -490,6 +533,8 @@ def draw():  # 绘制模块，每帧重复执行
 
 
 def update():  # 更新模块，每帧重复操作
+    if Game.init:
+        Game.init_game()
     Game.update()
     if not Game.lose:
         if not Game.start:
