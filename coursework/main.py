@@ -23,9 +23,17 @@ class Game:
     hero = None
     start_button = None
     enemise = []
+    barriers = []
     lose = False
     start = False
     init = True
+    level = 1
+    choose_buff = False
+    buff = []
+    buff_cursor = 1
+    buff_choice = []
+    buff_pressdown = False
+    buff_tack_effect = False
 
     @staticmethod
     def update():
@@ -34,8 +42,15 @@ class Game:
             return
         Game.generate_actors()
         # while destroy all enemies, go to next level
-        if Game.enemise == []:
+        if Game.enemise == [] and Game.start:
+            Game.level += 1
             Game.next_level()
+        # choose a buff
+        if Game.choose_buff:
+            Game.buff_choice[0](1, Game.buff_cursor == 1)
+            Game.buff_choice[1](2, Game.buff_cursor == 2)
+            Game.buff_choice[2](3, Game.buff_cursor == 3)
+            Game.move_buff_cursor()
 
     @staticmethod
     def deal_lose():
@@ -48,12 +63,14 @@ class Game:
         Game.actors = []
         if Game.background != None:
             Game.actors += [Game.background]
+        if Game.barriers != None and Game.barriers != []:
+            Game.actors += Game.barriers
         if Game.hero != None:
             Game.actors += [Game.hero]
-        if Game.start_button != None:
-            Game.actors += [Game.start_button]
         if Game.enemise != None and Game.enemise != []:
             Game.actors += Game.enemise
+        if Game.start_button != None:
+            Game.actors += [Game.start_button]
 
     # TODO: init game
     @staticmethod
@@ -65,18 +82,117 @@ class Game:
         Game.hero = Hero()
         for enemy in Game.enemise:
             enemy.forced_kill()
-        Game.enemise.append(Basic_Enemy())
+        Game.barriers = []
         Game.lose = False
         Game.start = False
+        Game.level = 1
         Game.init = False
-        Game.update()
+        Game.buff = [
+            Buff.increase_damage,
+            Buff.slow_down_enemies,
+            Buff.rebound,
+            Buff.add_front_bullet,
+            Buff.add_attack_speed,
+            Buff.recover_hp,
+            Buff.add_left_top_right_bullet,
+            Buff.add_left_right_bullet,
+            Buff.pass_bullet,
+        ]
+        Game.next_level()
+        # Game.update()
 
+    @staticmethod
     def next_level():
         Game.start_button = Start_Button()
         Game.hero.forced_kill()
-        Game.enemise.append(Basic_Enemy())
-        Game.update()
+        Game.enemise = []
+        Game.barriers = []
+        Game.level_generator[Game.level - 1]()
         Game.start = False
+        if Game.level != 1:
+            Game.choose_buff = True
+            Game.buff_choice = random.sample(Game.buff, 3)
+
+    @staticmethod
+    def move_buff_cursor():
+        if not Game.buff_pressdown and keyboard.UP:
+            Game.buff_cursor -= 1
+            Game.buff_pressdown = True
+        elif not Game.buff_pressdown and keyboard.DOWN:
+            Game.buff_cursor += 1
+            Game.buff_pressdown = True
+        elif not keyboard.UP and not keyboard.DOWN and not keyboard.RETURN:
+            Game.buff_pressdown = False
+        if not keyboard.RETURN and Game.buff_tack_effect:
+            Game.buff_tack_effect = False
+            Game.buff_pressdown = False
+            Game.choose_buff = False
+        if Game.buff_cursor < 1:
+            Game.buff_cursor = 3
+        if Game.buff_cursor > 3:
+            Game.buff_cursor = 1
+
+    @staticmethod
+    def level1():
+        Game.enemise += [
+            Basic_Enemy(
+                x=random.uniform(Game.deviation, Game.WIDTH * 1.0 / 3),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+            Basic_Enemy(
+                x=random.uniform(
+                    Game.deviation + Game.WIDTH * 2.0 / 3,
+                    Game.WIDTH - Game.deviation,
+                ),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+            Basic_Enemy(
+                x=random.uniform(
+                    Game.deviation + Game.WIDTH * 1.0 / 3,
+                    Game.WIDTH * 2.0 / 3 - Game.deviation,
+                ),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+        ]
+        # Game.barriers.append(Barrier())
+        Game.barriers += [
+            Barrier(
+                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
+                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+            ),
+            Barrier(
+                x=random.uniform(Game.WIDTH * 1.0 / 3, Game.WIDTH * 2.0 / 3),
+                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+            ),
+            Barrier(
+                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
+                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+            ),
+        ]
+
+    @staticmethod
+    def level2():
+        Game.level1()
+
+    @staticmethod
+    def level3():
+        Game.level1()
+
+    @staticmethod
+    def level4():
+        Game.level1()
+
+    @staticmethod
+    def level5():
+        Game.level1()
+
+    level_generator = [
+        level1,
+        level2,
+        level3,
+        level4,
+        level5,
+    ]  # generate the different level
 
 
 # interface of all kinds of actors
@@ -125,19 +241,20 @@ class BackGround(All_Actors):
 
     def draw(self):
         self.background1.draw()  # 绘制游戏背景
-        self.background2.draw()  # 绘制游戏背景
+        # self.background2.draw()  # 绘制游戏背景
 
     def update(self):
-        # 以下代码用于实现背景图片的循环滚动效果
-        if self.background1.y > 852 / 2 + 852:
-            self.background1.y = -852 / 2  # 背景1移动到背景2的正上方
-        if self.background2.y > 852 / 2 + 852:
-            self.background2.y = -852 / 2  # 背景2移动到背景1的正上方
-        self.background1.y += 1  # 背景1向下滚动
-        self.background2.y += 1  # 背景2向下滚动
+        pass
+        # # 以下代码用于实现背景图片的循环滚动效果
+        # if self.background1.y > 852 / 2 + 852:
+        #     self.background1.y = -852 / 2  # 背景1移动到背景2的正上方
+        # if self.background2.y > 852 / 2 + 852:
+        #     self.background2.y = -852 / 2  # 背景2移动到背景1的正上方
+        # self.background1.y += 1  # 背景1向下滚动
+        # self.background2.y += 1  # 背景2向下滚动
 
     def get_actor(self):
-        pass
+        return self.background1
 
 
 class Start_Button(All_Actors):
@@ -151,9 +268,13 @@ class Start_Button(All_Actors):
         self.start_pic = self.start_no
 
     def draw(self):
+        if Game.choose_buff:
+            return
         self.start_pic.draw()
 
     def update(self):
+        if Game.choose_buff or Game.buff_pressdown:
+            return
         self.check_keyboard()
 
     def get_actor(self):
@@ -225,6 +346,9 @@ class Bullets(All_Actors):
     def check_collision(self, actor):
         pass
 
+    def check_boundary(self):
+        pass
+
 
 # The most common bullet
 class Basic_Bullets(Bullets):
@@ -271,6 +395,7 @@ class Basic_Bullets(Bullets):
             self.exsit = False
             actor.be_attacked(self.attack_power)
 
+    # out of boundary or hit the wall
     def check_boundary(self):
         # out of boundary
         if (
@@ -280,9 +405,40 @@ class Basic_Bullets(Bullets):
             or self.bullet.y < -Game.deviation
         ):
             self.exsit = False
+        for barrier in Game.barriers:
+            if self.bullet.colliderect(barrier.get_actor()):
+                self.exsit = False
 
     def check_exsit(self):
         return self.exsit
+
+
+class Barrier(All_Actors):
+    def __init__(
+        self,
+        actor_pic: str = "barrier",
+        x: float = Game.WIDTH / 2,
+        y: float = Game.HEIGHT / 2,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("barrier").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.barrier = Actor(actor_pic)
+        self.barrier.x = x
+        self.barrier.y = y
+
+    def draw(self):
+        self.barrier.draw()
+
+    def update(self):
+        pass
+
+    def get_actor(self):
+        return self.barrier
 
 
 # player
@@ -291,14 +447,15 @@ class Hero(Actor_has_blood):
     def __init__(self) -> None:
         self.hero = Actor("hero")
         self.hero.x = Game.WIDTH / 2
-        self.hero.y = Game.HEIGHT * 2 / 3
-        self.hero.speed = 3
+        self.hero.y = Game.HEIGHT * 4 / 5
+        self.hero.speed = 2.5  # move speed
+        self.previous_pos = self.hero.pos
         self.bullets = []
         self.bullet_class = Basic_Bullets
         self.attack_speed = 0.8  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
         self.nearest = None
-        self.hp = HP(4, self)
+        self.hp = HP(50, self)
 
     def draw(self):
         self.hp.draw()
@@ -310,10 +467,10 @@ class Hero(Actor_has_blood):
         self.update_bullets()
         # traverse enemies to get the nearest enemy and check the collision with bullets
         self.check_enemies()
-        # avoid leaving the map
-        self.check_boundary()
         # check the keyboard
-        self.check_keyboard()
+        self.update_hero_pos()
+        # avoid leaving the map or hit the wall
+        self.check_boundary()
         # check blood
         self.check_blood()
         # update_blood
@@ -348,7 +505,7 @@ class Hero(Actor_has_blood):
             if self.attacking == True:
                 clock.unschedule(self.attack)
                 self.attacking = False
-            Game.deal_lose()
+            Game.lose = True
 
     # traverse enemies to get the nearest enemy and check the collision with bullets
     def check_enemies(self):
@@ -360,8 +517,9 @@ class Hero(Actor_has_blood):
             for bullet in self.bullets:
                 bullet.check_collision(actor)
 
-    # check keyboard event
-    def check_keyboard(self):
+    # update hero position
+    def update_hero_pos(self):
+        self.previous_pos = self.hero.pos
         if self.press_key():
             self.attacking = False
             clock.unschedule(self.attack)
@@ -394,6 +552,9 @@ class Hero(Actor_has_blood):
             self.hero.bottom = Game.HEIGHT
         if self.hero.top < 0:
             self.hero.top = 0
+        for barrier in Game.barriers:
+            if self.hero.colliderect(barrier.get_actor()):
+                self.hero.pos = self.previous_pos
 
     def press_key(self):
         if (
@@ -436,6 +597,10 @@ class Hero(Actor_has_blood):
             clock.unschedule(self.attack)
             self.attacking = False
         self.bullets = []
+        self.hero.x = Game.WIDTH / 2
+        self.hero.y = Game.HEIGHT * 4 / 5
+        self.hero.angle = 0
+        self.update_blood_pos()
 
 
 class Enemy(Actor_has_blood):
@@ -446,15 +611,27 @@ class Enemy(Actor_has_blood):
 # the most common enemy
 # TODO:删除时记得取消schedule
 class Basic_Enemy(Enemy):
-    def __init__(self) -> None:
-        self.enemy = Actor("enemy")
-        self.enemy.x = Game.WIDTH / 2
-        self.enemy.y = Game.HEIGHT / 4
+    def __init__(
+        self,
+        actor_pic: str = "enemy",
+        x: int = Game.WIDTH / 2,
+        y: int = Game.HEIGHT / 4,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("enemy").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.enemy = Actor(actor_pic)
+        self.enemy.x = x
+        self.enemy.y = y
         self.bullets = []
         self.bullet_class = Basic_Bullets
         self.attack_speed = 1.5  # gap time for each bullet
         self.attacking = False
-        self.hp = HP(20, self)
+        self.hp = HP(4, self)
 
     def draw(self):
         self.enemy.draw()
@@ -525,6 +702,142 @@ class Basic_Enemy(Enemy):
             clock.unschedule(self.attack)
             self.attacking = False
         Game.enemise.remove(self)
+
+
+class Buff:
+    """order: int between 1 - 3 to define the order of each buff tag
+    be_selected: bool check the cursor location
+    """
+
+    buff_pos = [
+        (Game.WIDTH * 1.0 / 2, Game.HEIGHT * 1.0 / 4),
+        (Game.WIDTH * 1.0 / 2, Game.HEIGHT * 2.0 / 4),
+        (Game.WIDTH * 1.0 / 2, Game.HEIGHT * 3.0 / 4),
+    ]
+
+    increase_damage_tuple = (
+        Actor("increase_damage"),
+        Actor("increase_damage_selected"),
+    )
+
+    @staticmethod
+    def increase_damage(order: int, be_selected: bool):
+        Buff.increase_damage_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.increase_damage_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    slow_down_enemies_tuple = (
+        Actor("slow_down_enemies"),
+        Actor("slow_down_enemies_selected"),
+    )
+
+    @staticmethod
+    def slow_down_enemies(order: int, be_selected: bool):
+        Buff.slow_down_enemies_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.slow_down_enemies_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    rebound_tuple = (
+        Actor("rebound"),
+        Actor("rebound_selected"),
+    )
+
+    @staticmethod
+    def rebound(order: int, be_selected: bool):
+        Buff.rebound_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.rebound_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    add_front_bullet_tuple = (
+        Actor("add_front_bullet"),
+        Actor("add_front_bullet_selected"),
+    )
+
+    @staticmethod
+    def add_front_bullet(order: int, be_selected: bool):
+        Buff.add_front_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.add_front_bullet_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    add_attack_speed_tuple = (
+        Actor("add_attack_speed"),
+        Actor("add_attack_speed_selected"),
+    )
+
+    @staticmethod
+    def add_attack_speed(order: int, be_selected: bool):
+        Buff.add_attack_speed_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.add_attack_speed_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    recover_hp_tuple = (
+        Actor("recover_hp"),
+        Actor("recover_hp_selected"),
+    )
+
+    @staticmethod
+    def recover_hp(order: int, be_selected: bool):
+        Buff.recover_hp_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.recover_hp_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    add_left_top_right_bullet_tuple = (
+        Actor("add_left_top_right_bullet"),
+        Actor("add_left_top_right_bullet_selected"),
+    )
+
+    @staticmethod
+    def add_left_top_right_bullet(order: int, be_selected: bool):
+        Buff.add_left_top_right_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.add_left_top_right_bullet_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    add_left_right_bullet_tuple = (
+        Actor("add_left_right_bullet"),
+        Actor("add_left_right_bullet_selected"),
+    )
+
+    @staticmethod
+    def add_left_right_bullet(order: int, be_selected: bool):
+        Buff.add_left_right_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.add_left_right_bullet_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    pass_bullet_tuple = (
+        Actor("pass_bullet"),
+        Actor("pass_bullet_selected"),
+    )
+
+    @staticmethod
+    def pass_bullet(order: int, be_selected: bool):
+        Buff.pass_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.pass_bullet_tuple[be_selected])
+        if be_selected and Buff.check_enter():
+            # TODO: buff效果
+            Game.buff_tack_effect = True
+
+    @staticmethod
+    def check_enter():
+        if keyboard.RETURN:
+            Game.buff_pressdown = True
+            return True
+        return False
 
 
 def draw():  # 绘制模块，每帧重复执行
