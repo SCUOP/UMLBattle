@@ -103,10 +103,14 @@ class Game:
 
     @staticmethod
     def next_level():
+        print(Game.level)
         Game.start_button = Start_Button()
         Game.hero.forced_kill()
         Game.enemise = []
         Game.barriers = []
+        # TODO: 修改
+        if Game.level > 5:
+            Game.level = 1
         Game.level_generator[Game.level - 1]()
         Game.start = False
         if Game.level != 1:
@@ -194,6 +198,17 @@ class Game:
         level5,
     ]  # generate the different level
 
+    @staticmethod
+    def check_actor_collide(actor1: Actor, actor2: Actor):
+        if (
+            actor1.x + actor1.width / 2 >= actor2.x - actor2.width / 2
+            and actor1.x - actor1.width / 2 <= actor2.x + actor2.width / 2
+            and actor1.y + actor1.height / 2 >= actor2.y - actor2.height / 2
+            and actor1.y - actor1.height / 2 <= actor2.y + actor2.height / 2
+        ):
+            return True
+        return False
+
 
 # interface of all kinds of actors
 class All_Actors(ABC):
@@ -208,7 +223,7 @@ class All_Actors(ABC):
         pass
 
     @abstractmethod
-    def get_actor(self):
+    def get_actor(self) -> Actor:
         pass
 
 
@@ -343,16 +358,30 @@ class HP(All_Actors):
 
 # super class for all kinds of bullets
 class Bullets(All_Actors):
+    @abstractmethod
     def check_collision(self, actor):
         pass
 
+    @abstractmethod
     def check_boundary(self):
+        pass
+
+    @abstractmethod
+    def check_exsit(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_copy(self):
         pass
 
 
 # The most common bullet
 class Basic_Bullets(Bullets):
-    def __init__(self, shoot_pos: tuple, target_pos: tuple = None) -> None:
+    def __init__(
+        self,
+        shoot_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
+        target_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
+    ) -> None:
         """Basic_Bullets init
 
         Args:
@@ -363,13 +392,12 @@ class Basic_Bullets(Bullets):
         self.bullet = Actor("bullet")
         self.bullet.x = shoot_pos[0]
         self.bullet.y = shoot_pos[1]
-        self.exsit = True  # determine whether the bullet is exsit
-        self.abs_v = 4  # absolute speed
-        if target_pos is not None:
-            self.bullet.angle = self.bullet.angle_to(target_pos) + 90
-        self.bullet.vx = self.abs_v * math.sin(math.radians(self.bullet.angle))
-        self.bullet.vy = self.abs_v * math.cos(math.radians(self.bullet.angle))
-        self.attack_power = 4
+        self.bullet.abs_v = 4  # absolute speed
+        self.bullet.angle = self.bullet.angle_to(target_pos) + 90
+        self.bullet.vx = self.bullet.abs_v * math.sin(math.radians(self.bullet.angle))
+        self.bullet.vy = self.bullet.abs_v * math.cos(math.radians(self.bullet.angle))
+        self.bullet.exsit = True  # determine whether the bullet is exsit
+        self.bullet.attack_power = 4
 
     def draw(self):
         self.bullet.draw()
@@ -382,7 +410,7 @@ class Basic_Bullets(Bullets):
         self.bullet.x += self.bullet.vx
         self.bullet.y += self.bullet.vy
 
-    def get_actor(self):
+    def get_actor(self) -> Actor:
         return self.bullet
 
     def check_collision(self, actor):
@@ -391,9 +419,9 @@ class Basic_Bullets(Bullets):
         Args:
             actor (All_Actors): the bullet target
         """
-        if self.bullet.colliderect(actor.get_actor()):
-            self.exsit = False
-            actor.be_attacked(self.attack_power)
+        if Game.check_actor_collide(self.get_actor(), actor.get_actor()):
+            self.bullet.exsit = False
+            actor.be_attacked(self.bullet.attack_power)
 
     # out of boundary or hit the wall
     def check_boundary(self):
@@ -404,13 +432,128 @@ class Basic_Bullets(Bullets):
             or self.bullet.y > Game.HEIGHT + Game.deviation
             or self.bullet.y < -Game.deviation
         ):
-            self.exsit = False
+            self.bullet.exsit = False
         for barrier in Game.barriers:
-            if self.bullet.colliderect(barrier.get_actor()):
-                self.exsit = False
+            if Game.check_actor_collide(self.get_actor(), barrier.get_actor()):
+                self.bullet.exsit = False
 
-    def check_exsit(self):
-        return self.exsit
+    def check_exsit(self) -> bool:
+        return self.bullet.exsit
+
+    def get_copy(self) -> Bullets:
+        bullet = Basic_Bullets()
+        bullet.bullet.pos = self.bullet.pos
+        bullet.bullet.abs_v = self.bullet.abs_v
+        bullet.bullet.angle = self.bullet.angle
+        bullet.bullet.vx = self.bullet.vx
+        bullet.bullet.vy = self.bullet.vy
+        bullet.bullet.exsit = self.bullet.exsit
+        bullet.bullet.attack_power = self.bullet.attack_power
+        return bullet
+
+
+# decorator of bullets
+class Bullets_Decorator(Bullets):
+    def __init__(self, bullet: Bullets) -> None:
+        """the abstract decorator of bullets
+
+        Args:
+            bullet (Bullets): which bullet needs to be decorator
+        """
+        self.bullet = bullet
+        self.enemies = (
+            Game.enemise
+        )  # rebound and pass_bullet need this attr to avoid repeat attack
+
+    # draw
+    def draw(self):
+        self.bullet.draw()
+
+    # update
+    def update(self):
+        self.bullet.update()
+
+    def get_actor(self) -> Actor:
+        return self.bullet.get_actor()
+
+    def check_collision(self, actor):
+        self.bullet.check_collision(actor)
+
+    def check_boundary(self):
+        self.bullet.check_boundary()
+
+    def check_exsit(self) -> bool:
+        return self.bullet.check_exsit()
+
+    def get_copy(self) -> Bullets:
+        return Bullets_Decorator(self.bullet.get_copy())
+
+
+class Increase_Damage_Bullets_Decorator(Bullets_Decorator):
+    def __init__(self, bullet: Bullets) -> None:
+        super().__init__(bullet)
+        self.get_actor().attack_power += 4
+
+    def get_copy(self) -> Bullets:
+        return Increase_Damage_Bullets_Decorator(self.bullet.get_copy())
+
+
+class Rebound_Bullets_Decorator(Bullets_Decorator):
+    def __init__(self, bullet: Bullets) -> None:
+        super().__init__(bullet)
+        # number of bounces (3)
+        self.rebound_times = 3
+
+    def update(self):
+        self.update_pos()
+        self.check_boundary()
+
+    def check_boundary(self):
+        # left and right boundary
+        if (
+            self.get_actor().x <= self.get_actor().width / 2
+            or self.get_actor().x >= Game.WIDTH - self.get_actor().width / 2
+        ):
+            self.get_actor().vx = -self.get_actor().vx
+            self.rebound_times -= 1
+            self.enemies = Game.enemise
+        # top and bottom boundary
+        elif (
+            self.get_actor().y <= self.get_actor().height / 2
+            or self.get_actor().y >= Game.HEIGHT - self.get_actor().height / 2
+        ):
+            self.get_actor().vy = -self.get_actor().vy
+            self.rebound_times -= 1
+            self.enemies = Game.enemise
+        # hit barrier
+        for barrier in Game.barriers:
+            if Game.check_actor_collide(self.get_actor(), barrier.get_actor()):
+                self.enemies = Game.enemise
+                self.rebound_times -= 1
+                if (
+                    self.get_actor().y >= barrier.get_actor().top
+                    and self.get_actor().y <= barrier.get_actor().bottom
+                ):
+                    self.get_actor().vx = -self.get_actor().vx
+                elif (
+                    self.get_actor().x >= barrier.get_actor().left
+                    and self.get_actor().x <= barrier.get_actor().right
+                ):
+                    self.get_actor().vy = -self.get_actor().vy
+                else:
+                    self.get_actor().vx = -self.get_actor().vx
+                    self.get_actor().vy = -self.get_actor().vy
+        if self.rebound_times < 0:
+            self.get_actor().exsit = False
+        else:
+            self.get_actor().exsit = True
+
+    def update_pos(self):
+        self.get_actor().x += self.get_actor().vx
+        self.get_actor().y += self.get_actor().vy
+
+    def get_copy(self) -> Bullets:
+        return Rebound_Bullets_Decorator(self.bullet.get_copy())
 
 
 class Barrier(All_Actors):
@@ -451,10 +594,14 @@ class Hero(Actor_has_blood):
         self.hero.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
-        self.bullet_class = Basic_Bullets
-        self.attack_speed = 0.8  # gap time for each bullet
+        self.bullet_proto = Basic_Bullets()
+        self.bullet_class = Bullets_Decorator
+        self.attack_speed = 1.2  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
         self.nearest = None
+        self.add_front_bullet = False
+        self.add_left_top_right_bullet = False
+        self.add_left_right_bullet = False
         self.hp = HP(50, self)
 
     def draw(self):
@@ -493,9 +640,9 @@ class Hero(Actor_has_blood):
 
     def update_bullets(self):
         for bullet in self.bullets:
-            bullet.update()
             if not bullet.check_exsit():
                 self.bullets.remove(bullet)
+            bullet.update()
 
     def update_blood_pos(self):
         self.hp.update_pos(self)
@@ -540,7 +687,101 @@ class Hero(Actor_has_blood):
             self.hero.x - distance * math.sin(math.radians(self.hero.angle)),
             self.hero.y - distance * math.cos(math.radians(self.hero.angle)),
         )
-        self.bullets.append(self.bullet_class(pos, self.nearest.get_actor().pos))
+        bullet = self.bullet_proto.get_copy()
+        bullet.get_actor().pos = pos
+        bullet.get_actor().angle = (
+            bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 90
+        )
+        bullet.get_actor().vx = bullet.get_actor().abs_v * math.sin(
+            math.radians(bullet.get_actor().angle)
+        )
+        bullet.get_actor().vy = bullet.get_actor().abs_v * math.cos(
+            math.radians(bullet.get_actor().angle)
+        )
+        self.bullets.append(self.bullet_class(bullet))
+        if self.add_front_bullet:
+            left_bullet = bullet.get_copy()
+            left_bullet.get_actor().x += left_bullet.get_actor().width * math.cos(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            left_bullet.get_actor().y -= left_bullet.get_actor().width * math.sin(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(left_bullet))
+            right_bullet = bullet.get_copy()
+            right_bullet.get_actor().x -= left_bullet.get_actor().width * math.cos(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().y += left_bullet.get_actor().width * math.sin(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(right_bullet))
+        if self.add_left_top_right_bullet:
+            left_bullet = bullet.get_copy()
+            pos = (
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle + 45)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle + 45)),
+            )
+            left_bullet.get_actor().pos = pos
+            left_bullet.get_actor().angle = (
+                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 135
+            )
+            left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            left_bullet.get_actor().vy = left_bullet.get_actor().abs_v * math.cos(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(left_bullet))
+            right_bullet = bullet.get_copy()
+            pos = (
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle - 45)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle - 45)),
+            )
+            right_bullet.get_actor().pos = pos
+            right_bullet.get_actor().angle = (
+                right_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 45
+            )
+            right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().vy = right_bullet.get_actor().abs_v * math.cos(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(right_bullet))
+        if self.add_left_right_bullet:
+            left_bullet = bullet.get_copy()
+            pos = (
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle + 90)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle + 90)),
+            )
+            left_bullet.get_actor().pos = pos
+            left_bullet.get_actor().angle = (
+                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 180
+            )
+            left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            left_bullet.get_actor().vy = left_bullet.get_actor().abs_v * math.cos(
+                math.radians(left_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(left_bullet))
+            right_bullet = bullet.get_copy()
+            pos = (
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle - 90)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle - 90)),
+            )
+            right_bullet.get_actor().pos = pos
+            right_bullet.get_actor().angle = right_bullet.get_actor().angle_to(
+                self.nearest.get_actor().pos
+            )
+            right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().vy = right_bullet.get_actor().abs_v * math.cos(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(right_bullet))
 
     # avoid leaving the map
     def check_boundary(self):
@@ -553,7 +794,7 @@ class Hero(Actor_has_blood):
         if self.hero.top < 0:
             self.hero.top = 0
         for barrier in Game.barriers:
-            if self.hero.colliderect(barrier.get_actor()):
+            if Game.check_actor_collide(self.get_actor(), barrier.get_actor()):
                 self.hero.pos = self.previous_pos
 
     def press_key(self):
@@ -601,6 +842,22 @@ class Hero(Actor_has_blood):
         self.hero.y = Game.HEIGHT * 4 / 5
         self.hero.angle = 0
         self.update_blood_pos()
+
+    # upgrade the bullet
+    def upgrade_bullet(self, upgrade_bullet_class: Bullets):
+        self.bullet_proto = self.bullet_class(self.bullet_proto)
+        self.bullet_class = upgrade_bullet_class
+
+    def increase_attack_speed(self) -> bool:
+        self.attack_speed -= 0.4
+        if self.attack_speed == 0.4:
+            return False
+        return True
+
+    def recover(self):
+        self.hp.now_blood += 10
+        if self.hp.now_blood > self.hp.full_blood:
+            self.hp.now_blood = self.hp.full_blood
 
 
 class Enemy(Actor_has_blood):
@@ -723,9 +980,9 @@ class Buff:
     @staticmethod
     def increase_damage(order: int, be_selected: bool):
         Buff.increase_damage_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.increase_damage_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(Buff.increase_damage_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.upgrade_bullet(Increase_Damage_Bullets_Decorator)
             Game.buff_tack_effect = True
 
     slow_down_enemies_tuple = (
@@ -736,8 +993,10 @@ class Buff:
     @staticmethod
     def slow_down_enemies(order: int, be_selected: bool):
         Buff.slow_down_enemies_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.slow_down_enemies_tuple[be_selected])
-        if be_selected and Buff.check_enter():
+        Game.actors.append(
+            Buff.slow_down_enemies_tuple[be_selected]
+        )  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
             # TODO: buff效果
             Game.buff_tack_effect = True
 
@@ -749,9 +1008,10 @@ class Buff:
     @staticmethod
     def rebound(order: int, be_selected: bool):
         Buff.rebound_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.rebound_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(Buff.rebound_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.upgrade_bullet(Rebound_Bullets_Decorator)
+            Game.buff.remove(Buff.rebound)
             Game.buff_tack_effect = True
 
     add_front_bullet_tuple = (
@@ -762,9 +1022,10 @@ class Buff:
     @staticmethod
     def add_front_bullet(order: int, be_selected: bool):
         Buff.add_front_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.add_front_bullet_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(Buff.add_front_bullet_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.add_front_bullet = True
+            Game.buff.remove(Buff.add_front_bullet)
             Game.buff_tack_effect = True
 
     add_attack_speed_tuple = (
@@ -775,9 +1036,10 @@ class Buff:
     @staticmethod
     def add_attack_speed(order: int, be_selected: bool):
         Buff.add_attack_speed_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.add_attack_speed_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(Buff.add_attack_speed_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            if not Game.hero.increase_attack_speed():
+                Game.buff.remove(Buff.add_attack_speed)
             Game.buff_tack_effect = True
 
     recover_hp_tuple = (
@@ -788,9 +1050,9 @@ class Buff:
     @staticmethod
     def recover_hp(order: int, be_selected: bool):
         Buff.recover_hp_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.recover_hp_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(Buff.recover_hp_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.recover()
             Game.buff_tack_effect = True
 
     add_left_top_right_bullet_tuple = (
@@ -801,9 +1063,12 @@ class Buff:
     @staticmethod
     def add_left_top_right_bullet(order: int, be_selected: bool):
         Buff.add_left_top_right_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.add_left_top_right_bullet_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(
+            Buff.add_left_top_right_bullet_tuple[be_selected]
+        )  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.add_left_top_right_bullet = True
+            Game.buff.remove(Buff.add_left_top_right_bullet)
             Game.buff_tack_effect = True
 
     add_left_right_bullet_tuple = (
@@ -814,9 +1079,12 @@ class Buff:
     @staticmethod
     def add_left_right_bullet(order: int, be_selected: bool):
         Buff.add_left_right_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.add_left_right_bullet_tuple[be_selected])
-        if be_selected and Buff.check_enter():
-            # TODO: buff效果
+        Game.actors.append(
+            Buff.add_left_right_bullet_tuple[be_selected]
+        )  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+            Game.hero.add_left_right_bullet = True
+            Game.buff.remove(Buff.add_left_right_bullet)
             Game.buff_tack_effect = True
 
     pass_bullet_tuple = (
@@ -827,8 +1095,8 @@ class Buff:
     @staticmethod
     def pass_bullet(order: int, be_selected: bool):
         Buff.pass_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
-        Game.actors.append(Buff.pass_bullet_tuple[be_selected])
-        if be_selected and Buff.check_enter():
+        Game.actors.append(Buff.pass_bullet_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
             # TODO: buff效果
             Game.buff_tack_effect = True
 
