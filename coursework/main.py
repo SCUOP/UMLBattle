@@ -34,7 +34,7 @@ class Game:
     buff_cursor = 1
     buff_choice = []
     buff_pressdown = False
-    buff_tack_effect = False
+    buff_take_effect = False
 
     @staticmethod
     def update():
@@ -98,6 +98,7 @@ class Game:
             Buff.add_left_top_right_bullet,
             Buff.add_left_right_bullet,
             Buff.pass_bullet,
+            Buff.speed_up_bullet,
         ]
         Game.next_level()
         # Game.update()
@@ -127,8 +128,8 @@ class Game:
             Game.buff_pressdown = True
         elif not keyboard.UP and not keyboard.DOWN and not keyboard.RETURN:
             Game.buff_pressdown = False
-        if not keyboard.RETURN and Game.buff_tack_effect:
-            Game.buff_tack_effect = False
+        if not keyboard.RETURN and Game.buff_take_effect:
+            Game.buff_take_effect = False
             Game.buff_pressdown = False
             Game.choose_buff = False
         if Game.buff_cursor < 1:
@@ -155,6 +156,24 @@ class Game:
                     Game.deviation + Game.WIDTH * 1.0 / 3,
                     Game.WIDTH * 2.0 / 3 - Game.deviation,
                 ),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+            Move_Enemy(
+                x=random.uniform(
+                    Game.deviation + Game.WIDTH * 1.0 / 3,
+                    Game.WIDTH * 2.0 / 3 - Game.deviation,
+                ),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+            Sniper_Enemy(
+                x=random.uniform(
+                    Game.deviation + Game.WIDTH * 2.0 / 3,
+                    Game.WIDTH - Game.deviation,
+                ),
+                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            ),
+            Machine_Gun_Enemy(
+                x=random.uniform(Game.deviation, Game.WIDTH * 1.0 / 3),
                 y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
             ),
         ]
@@ -498,6 +517,18 @@ class Increase_Damage_Bullets_Decorator(Bullets_Decorator):
         return Increase_Damage_Bullets_Decorator(self.bullet.get_copy())
 
 
+class Slow_Down_Enemies_Bullets_Decorator(Bullets_Decorator):
+    def check_collision(self, actor: Actor_has_blood):
+        super().check_collision(actor)
+        if hasattr(actor, "speed") and Game.check_actor_collide(
+            self.get_actor(), actor.get_actor()
+        ):
+            actor.slow_down()
+
+    def get_copy(self) -> Bullets:
+        return Slow_Down_Enemies_Bullets_Decorator(self.bullet.get_copy())
+
+
 class Rebound_Bullets_Decorator(Bullets_Decorator):
     def __init__(self, bullet: Bullets) -> None:
         super().__init__(bullet)
@@ -568,6 +599,21 @@ class Pass_Bullet_Bullets_Decorator(Bullets_Decorator):
         return Pass_Bullet_Bullets_Decorator(self.bullet.get_copy())
 
 
+class Speed_Up_Bullet_Bullets_Decorator(Bullets_Decorator):
+    def __init__(self, bullet: Bullets) -> None:
+        super().__init__(bullet)
+        self.get_actor().abs_v += 2
+        self.get_actor().vx = self.get_actor().abs_v * math.sin(
+            math.radians(self.get_actor().angle)
+        )
+        self.get_actor().vy = self.get_actor().abs_v * math.cos(
+            math.radians(self.get_actor().angle)
+        )
+
+    def get_copy(self) -> Bullets:
+        return Speed_Up_Bullet_Bullets_Decorator(self.bullet.get_copy())
+
+
 class Barrier(All_Actors):
     def __init__(
         self,
@@ -606,14 +652,14 @@ class Hero(Actor_has_blood):
         self.hero.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
-        self.bullet_proto = Basic_Bullets()
+        self.bullet_proto = Slow_Down_Enemies_Bullets_Decorator(Basic_Bullets())
         self.bullet_class = Bullets_Decorator
         self.attack_speed = 1.2  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
         self.nearest = None
-        self.add_front_bullet = True
-        self.add_left_top_right_bullet = True
-        self.add_left_right_bullet = True
+        self.add_front_bullet = False
+        self.add_left_top_right_bullet = False
+        self.add_left_right_bullet = False
         self.hp = HP(50, self)
 
     def draw(self):
@@ -900,7 +946,7 @@ class Basic_Enemy(Enemy):
         self.bullet_class = Basic_Bullets
         self.attack_speed = 1.5  # gap time for each bullet
         self.attacking = False
-        self.hp = HP(30, self)
+        self.hp = HP(16, self)
 
     def draw(self):
         self.enemy.draw()
@@ -973,6 +1019,142 @@ class Basic_Enemy(Enemy):
         Game.enemise.remove(self)
 
 
+class Sniper_Enemy(Basic_Enemy):
+    class Sniper_Bullet(Bullets_Decorator):
+        def __init__(
+            self,
+            shoot_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
+            target_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
+        ) -> None:
+            self.bullet = Speed_Up_Bullet_Bullets_Decorator(
+                Speed_Up_Bullet_Bullets_Decorator(
+                    Increase_Damage_Bullets_Decorator(
+                        Increase_Damage_Bullets_Decorator(
+                            Increase_Damage_Bullets_Decorator(
+                                Basic_Bullets(
+                                    shoot_pos=shoot_pos, target_pos=target_pos
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+
+    def __init__(
+        self,
+        actor_pic: str = "enemy",
+        x: int = Game.WIDTH / 2,
+        y: int = Game.HEIGHT / 4,
+    ) -> None:
+        super().__init__(actor_pic, x, y)
+        self.attack_speed = 2.5
+        self.bullet_class = Sniper_Enemy.Sniper_Bullet
+
+
+class Machine_Gun_Enemy(Basic_Enemy):
+    def fire_one_bullet(self):
+        distance = self.enemy.height / 2
+        pos = (
+            self.enemy.x + distance * math.sin(math.radians(self.enemy.angle)),
+            self.enemy.y + distance * math.cos(math.radians(self.enemy.angle)),
+        )
+        self.bullets.append(self.bullet_class(pos, Game.hero.get_actor().pos))
+
+    def attack(self):  # shoot
+        for i in range(6):
+            clock.schedule(self.fire_one_bullet, 0.1 * (i + 1))
+
+
+class Move_Enemy(Enemy):
+    def __init__(
+        self,
+        actor_pic: str = "enemy",
+        x: int = Game.WIDTH / 2,
+        y: int = Game.HEIGHT / 4,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("enemy").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.enemy = Actor(actor_pic)
+        self.enemy.x = x
+        self.enemy.y = y
+        self.speed = 1  # speed
+        self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+        self.attacking = False
+        self.hp = HP(24, self)
+        self.attack_power = 10
+
+    # draw
+    def draw(self):
+        self.enemy.draw()
+        self.hp.draw()
+
+    # update
+    def update(self):
+        self.update_self()
+        # check blood
+        self.check_blood()
+        # update_blood
+        self.update_blood_pos()
+        self.hp.update()
+
+    def get_actor(self) -> Actor:
+        return self.enemy
+
+    def be_attacked(self, decrease_value: int):
+        self.hp.decrease_blood(decrease_value)
+
+    def update_self(self):
+        self.adjust_angle()
+        if not self.attacking:
+            self.move()
+            self.attack()
+
+    def adjust_angle(self):
+        # enemy towards the player
+        if Game.hero != None:
+            self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+            self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+            self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+
+    def move(self):
+        self.enemy.x += self.vx
+        self.enemy.y += self.vy
+
+    def check_blood(self):
+        # check the enemy is killed?
+        if self.hp.get_now_blood() <= 0:
+            Game.enemise.remove(self)
+
+    def update_blood_pos(self):
+        self.hp.update_pos(self)
+
+    def forced_kill(self):
+        Game.enemise.remove(self)
+
+    def attack(self):
+        if Game.check_actor_collide(self.enemy, Game.hero.get_actor()):
+            Game.hero.be_attacked(self.attack_power)
+            self.attacking = True
+            clock.schedule(self.unlock_attack, 1.0)
+
+    def unlock_attack(self):
+        self.attacking = False
+
+    def slow_down(self):
+        self.speed = 0.5
+        clock.schedule_unique(self.recover_speed, 2.0)
+
+    def recover_speed(self):
+        self.speed = 1
+
+
 class Buff:
     """order: int between 1 - 3 to define the order of each buff tag
     be_selected: bool check the cursor location
@@ -993,9 +1175,9 @@ class Buff:
     def increase_damage(order: int, be_selected: bool):
         Buff.increase_damage_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.increase_damage_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.upgrade_bullet(Increase_Damage_Bullets_Decorator)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     slow_down_enemies_tuple = (
         Actor("slow_down_enemies"),
@@ -1008,9 +1190,10 @@ class Buff:
         Game.actors.append(
             Buff.slow_down_enemies_tuple[be_selected]
         )  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
-            # TODO: buff效果
-            Game.buff_tack_effect = True
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
+            Game.hero.upgrade_bullet(Slow_Down_Enemies_Bullets_Decorator)
+            Game.buff.remove(Buff.slow_down_enemies)
+            Game.buff_take_effect = True
 
     rebound_tuple = (
         Actor("rebound"),
@@ -1021,10 +1204,10 @@ class Buff:
     def rebound(order: int, be_selected: bool):
         Buff.rebound_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.rebound_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.upgrade_bullet(Rebound_Bullets_Decorator)
             Game.buff.remove(Buff.rebound)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     add_front_bullet_tuple = (
         Actor("add_front_bullet"),
@@ -1035,10 +1218,10 @@ class Buff:
     def add_front_bullet(order: int, be_selected: bool):
         Buff.add_front_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.add_front_bullet_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.add_front_bullet = True
             Game.buff.remove(Buff.add_front_bullet)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     add_attack_speed_tuple = (
         Actor("add_attack_speed"),
@@ -1049,10 +1232,10 @@ class Buff:
     def add_attack_speed(order: int, be_selected: bool):
         Buff.add_attack_speed_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.add_attack_speed_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             if not Game.hero.increase_attack_speed():
                 Game.buff.remove(Buff.add_attack_speed)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     recover_hp_tuple = (
         Actor("recover_hp"),
@@ -1063,9 +1246,9 @@ class Buff:
     def recover_hp(order: int, be_selected: bool):
         Buff.recover_hp_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.recover_hp_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.recover()
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     add_left_top_right_bullet_tuple = (
         Actor("add_left_top_right_bullet"),
@@ -1078,10 +1261,10 @@ class Buff:
         Game.actors.append(
             Buff.add_left_top_right_bullet_tuple[be_selected]
         )  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.add_left_top_right_bullet = True
             Game.buff.remove(Buff.add_left_top_right_bullet)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     add_left_right_bullet_tuple = (
         Actor("add_left_right_bullet"),
@@ -1094,10 +1277,10 @@ class Buff:
         Game.actors.append(
             Buff.add_left_right_bullet_tuple[be_selected]
         )  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.add_left_right_bullet = True
             Game.buff.remove(Buff.add_left_right_bullet)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
 
     pass_bullet_tuple = (
         Actor("pass_bullet"),
@@ -1108,10 +1291,22 @@ class Buff:
     def pass_bullet(order: int, be_selected: bool):
         Buff.pass_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.pass_bullet_tuple[be_selected])  # register to draw
-        if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
             Game.hero.upgrade_bullet(Pass_Bullet_Bullets_Decorator)
             Game.buff.remove(Buff.pass_bullet)
-            Game.buff_tack_effect = True
+            Game.buff_take_effect = True
+
+    speed_up_bullet_tuple = (
+        Actor("speed_up_bullet"),
+        Actor("speed_up_bullet_selected"),
+    )
+
+    def speed_up_bullet(order: int, be_selected: bool):
+        Buff.speed_up_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
+        Game.actors.append(Buff.speed_up_bullet_tuple[be_selected])  # register to draw
+        if be_selected and Buff.check_enter() and not Game.buff_take_effect:
+            Game.hero.upgrade_bullet(Speed_Up_Bullet_Bullets_Decorator)
+            Game.buff_take_effect = True
 
     @staticmethod
     def check_enter():
