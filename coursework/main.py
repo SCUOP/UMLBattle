@@ -2,6 +2,7 @@ import pgzrun  # 导入游戏库
 import random  # 导入随机库
 from abc import abstractmethod, ABC
 import math
+import copy
 
 WIDTH = 480  # 设置窗口的宽度
 HEIGHT = 700  # 设置窗口的高度
@@ -103,7 +104,6 @@ class Game:
 
     @staticmethod
     def next_level():
-        print(Game.level)
         Game.start_button = Start_Button()
         Game.hero.forced_kill()
         Game.enemise = []
@@ -398,6 +398,9 @@ class Basic_Bullets(Bullets):
         self.bullet.vy = self.bullet.abs_v * math.cos(math.radians(self.bullet.angle))
         self.bullet.exsit = True  # determine whether the bullet is exsit
         self.bullet.attack_power = 4
+        self.bullet.enemies = copy.copy(
+            Game.enemise
+        )  # rebound and pass_bullet need this attr to avoid repeat attack
 
     def draw(self):
         self.bullet.draw()
@@ -413,7 +416,7 @@ class Basic_Bullets(Bullets):
     def get_actor(self) -> Actor:
         return self.bullet
 
-    def check_collision(self, actor):
+    def check_collision(self, actor: Actor_has_blood):
         """check cpllision
 
         Args:
@@ -461,9 +464,6 @@ class Bullets_Decorator(Bullets):
             bullet (Bullets): which bullet needs to be decorator
         """
         self.bullet = bullet
-        self.enemies = (
-            Game.enemise
-        )  # rebound and pass_bullet need this attr to avoid repeat attack
 
     # draw
     def draw(self):
@@ -476,7 +476,7 @@ class Bullets_Decorator(Bullets):
     def get_actor(self) -> Actor:
         return self.bullet.get_actor()
 
-    def check_collision(self, actor):
+    def check_collision(self, actor: Actor_has_blood):
         self.bullet.check_collision(actor)
 
     def check_boundary(self):
@@ -492,7 +492,7 @@ class Bullets_Decorator(Bullets):
 class Increase_Damage_Bullets_Decorator(Bullets_Decorator):
     def __init__(self, bullet: Bullets) -> None:
         super().__init__(bullet)
-        self.get_actor().attack_power += 4
+        self.get_actor().attack_power += 2
 
     def get_copy(self) -> Bullets:
         return Increase_Damage_Bullets_Decorator(self.bullet.get_copy())
@@ -516,7 +516,7 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
         ):
             self.get_actor().vx = -self.get_actor().vx
             self.rebound_times -= 1
-            self.enemies = Game.enemise
+            self.get_actor().enemies = copy.copy(Game.enemise)
         # top and bottom boundary
         elif (
             self.get_actor().y <= self.get_actor().height / 2
@@ -524,11 +524,11 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
         ):
             self.get_actor().vy = -self.get_actor().vy
             self.rebound_times -= 1
-            self.enemies = Game.enemise
+            self.get_actor().enemies = copy.copy(Game.enemise)
         # hit barrier
         for barrier in Game.barriers:
             if Game.check_actor_collide(self.get_actor(), barrier.get_actor()):
-                self.enemies = Game.enemise
+                self.get_actor().enemies = copy.copy(Game.enemise)
                 self.rebound_times -= 1
                 if (
                     self.get_actor().y >= barrier.get_actor().top
@@ -554,6 +554,18 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
 
     def get_copy(self) -> Bullets:
         return Rebound_Bullets_Decorator(self.bullet.get_copy())
+
+
+class Pass_Bullet_Bullets_Decorator(Bullets_Decorator):
+    def check_collision(self, actor: Actor_has_blood):
+        if actor in self.get_actor().enemies and Game.check_actor_collide(
+            self.get_actor(), actor.get_actor()
+        ):
+            self.get_actor().enemies.remove(actor)
+            actor.be_attacked(self.get_actor().attack_power)
+
+    def get_copy(self) -> Bullets:
+        return Pass_Bullet_Bullets_Decorator(self.bullet.get_copy())
 
 
 class Barrier(All_Actors):
@@ -599,9 +611,9 @@ class Hero(Actor_has_blood):
         self.attack_speed = 1.2  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
         self.nearest = None
-        self.add_front_bullet = False
-        self.add_left_top_right_bullet = False
-        self.add_left_right_bullet = False
+        self.add_front_bullet = True
+        self.add_left_top_right_bullet = True
+        self.add_left_right_bullet = True
         self.hp = HP(50, self)
 
     def draw(self):
@@ -888,7 +900,7 @@ class Basic_Enemy(Enemy):
         self.bullet_class = Basic_Bullets
         self.attack_speed = 1.5  # gap time for each bullet
         self.attacking = False
-        self.hp = HP(4, self)
+        self.hp = HP(30, self)
 
     def draw(self):
         self.enemy.draw()
@@ -1097,7 +1109,8 @@ class Buff:
         Buff.pass_bullet_tuple[be_selected].pos = Buff.buff_pos[order - 1]
         Game.actors.append(Buff.pass_bullet_tuple[be_selected])  # register to draw
         if be_selected and Buff.check_enter() and not Game.buff_tack_effect:
-            # TODO: buff效果
+            Game.hero.upgrade_bullet(Pass_Bullet_Bullets_Decorator)
+            Game.buff.remove(Buff.pass_bullet)
             Game.buff_tack_effect = True
 
     @staticmethod
