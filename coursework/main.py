@@ -154,7 +154,7 @@ class Game:
                 x=random.uniform(Game.deviation, Game.WIDTH * 1.0 / 3),
                 y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
             ),
-            Basic_Enemy(
+            Sniper_Enemy(
                 x=random.uniform(
                     Game.deviation + Game.WIDTH * 2.0 / 3,
                     Game.WIDTH - Game.deviation,
@@ -168,8 +168,22 @@ class Game:
                 ),
                 y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
             ),
+            # Machine_Gun_Enemy(
+            #     x=random.uniform(
+            #         Game.deviation + Game.WIDTH * 1.0 / 3,
+            #         Game.WIDTH * 2.0 / 3 - Game.deviation,
+            #     ),
+            #     y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            # ),
+            # Shotgun_Machine_Gun_Enemy(
+            #     x=random.uniform(
+            #         Game.deviation + Game.WIDTH * 1.0 / 3,
+            #         Game.WIDTH * 2.0 / 3 - Game.deviation,
+            #     ),
+            #     y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            # ),
         ]
-        # Game.barriers.append(Barrier())
+
         Game.barriers += [
             Barrier(
                 x=random.uniform(0, Game.WIDTH * 1.0 / 3),
@@ -184,6 +198,7 @@ class Game:
                 y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
             ),
         ]
+
         Game.spider_webs += [
             Spider_Web(
                 x=random.uniform(0, Game.WIDTH * 1.0 / 3),
@@ -530,7 +545,7 @@ class Increase_Damage_Bullets_Decorator(Bullets_Decorator):
         self.get_actor().attack_power += 2
 
     def get_copy(self) -> Bullets:
-        return Increase_Damage_Bullets_Decorator(self.bullet.get_copy())
+        return Bullets_Decorator(self.bullet.get_copy())
 
 
 class Slow_Down_Enemies_Bullets_Decorator(Bullets_Decorator):
@@ -630,7 +645,7 @@ class Speed_Up_Bullet_Bullets_Decorator(Bullets_Decorator):
         )
 
     def get_copy(self) -> Bullets:
-        return Speed_Up_Bullet_Bullets_Decorator(self.bullet.get_copy())
+        return Bullets_Decorator(self.bullet.get_copy())
 
 
 class Barrier(All_Actors):
@@ -738,9 +753,7 @@ class Hero(Actor_has_blood):
         self.hero.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
-        self.bullet_proto = Pass_Bullet_Bullets_Decorator(
-            Rebound_Bullets_Decorator(Basic_Bullets())
-        )
+        self.bullet_proto = Basic_Bullets()
         self.bullet_class = Bullets_Decorator
         self.attack_speed = 1.2  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
@@ -808,7 +821,8 @@ class Hero(Actor_has_blood):
                 distance = self.hero.distance_to(actor.get_actor())
                 self.nearest = actor
             for bullet in self.bullets:
-                bullet.check_collision(actor)
+                if bullet.check_exsit():
+                    bullet.check_collision(actor)
 
     # update hero position
     def update_hero_pos(self):
@@ -846,24 +860,40 @@ class Hero(Actor_has_blood):
         )
         self.bullets.append(self.bullet_class(bullet))
         if self.add_front_bullet:
-            left_bullet = bullet.get_copy()
+            left_bullet = self.bullet_proto.get_copy()
+            left_bullet.get_actor().pos = pos
+            left_bullet.get_actor().angle = bullet.get_actor().angle
             left_bullet.get_actor().x += left_bullet.get_actor().width * math.cos(
                 math.radians(left_bullet.get_actor().angle)
             )
             left_bullet.get_actor().y -= left_bullet.get_actor().width * math.sin(
                 math.radians(left_bullet.get_actor().angle)
             )
-            self.bullets.append(self.bullet_class(left_bullet))
-            right_bullet = bullet.get_copy()
-            right_bullet.get_actor().x -= left_bullet.get_actor().width * math.cos(
+            left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
                 math.radians(left_bullet.get_actor().angle)
             )
-            right_bullet.get_actor().y += left_bullet.get_actor().width * math.sin(
+            left_bullet.get_actor().vy = left_bullet.get_actor().abs_v * math.cos(
                 math.radians(left_bullet.get_actor().angle)
+            )
+            self.bullets.append(self.bullet_class(left_bullet))
+            right_bullet = self.bullet_proto.get_copy()
+            right_bullet.get_actor().pos = pos
+            right_bullet.get_actor().angle = bullet.get_actor().angle
+            right_bullet.get_actor().x -= right_bullet.get_actor().width * math.cos(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().y += right_bullet.get_actor().width * math.sin(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
+                math.radians(right_bullet.get_actor().angle)
+            )
+            right_bullet.get_actor().vy = right_bullet.get_actor().abs_v * math.cos(
+                math.radians(right_bullet.get_actor().angle)
             )
             self.bullets.append(self.bullet_class(right_bullet))
         if self.add_left_top_right_bullet:
-            left_bullet = bullet.get_copy()
+            left_bullet = self.bullet_proto.get_copy()
             pos = (
                 self.hero.x - distance * math.sin(math.radians(self.hero.angle + 45)),
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle + 45)),
@@ -879,7 +909,7 @@ class Hero(Actor_has_blood):
                 math.radians(left_bullet.get_actor().angle)
             )
             self.bullets.append(self.bullet_class(left_bullet))
-            right_bullet = bullet.get_copy()
+            right_bullet = self.bullet_proto.get_copy()
             pos = (
                 self.hero.x - distance * math.sin(math.radians(self.hero.angle - 45)),
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle - 45)),
@@ -896,7 +926,7 @@ class Hero(Actor_has_blood):
             )
             self.bullets.append(self.bullet_class(right_bullet))
         if self.add_left_right_bullet:
-            left_bullet = bullet.get_copy()
+            left_bullet = self.bullet_proto.get_copy()
             pos = (
                 self.hero.x - distance * math.sin(math.radians(self.hero.angle + 90)),
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle + 90)),
@@ -912,7 +942,7 @@ class Hero(Actor_has_blood):
                 math.radians(left_bullet.get_actor().angle)
             )
             self.bullets.append(self.bullet_class(left_bullet))
-            right_bullet = bullet.get_copy()
+            right_bullet = self.bullet_proto.get_copy()
             pos = (
                 self.hero.x - distance * math.sin(math.radians(self.hero.angle - 90)),
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle - 90)),
@@ -996,7 +1026,7 @@ class Hero(Actor_has_blood):
 
     def increase_attack_speed(self) -> bool:
         self.attack_speed -= 0.4
-        if self.attack_speed == 0.4:
+        if self.attack_speed <= 0.4:
             return False
         return True
 
