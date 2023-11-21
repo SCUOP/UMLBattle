@@ -25,6 +25,8 @@ class Game:
     start_button = None
     enemise = []
     barriers = []
+    spider_webs = []
+    thornses = []
     lose = False
     start = False
     init = True
@@ -66,6 +68,10 @@ class Game:
             Game.actors += [Game.background]
         if Game.barriers != None and Game.barriers != []:
             Game.actors += Game.barriers
+        if Game.spider_webs != None and Game.spider_webs != []:
+            Game.actors += Game.spider_webs
+        if Game.thornses != None and Game.thornses != []:
+            Game.actors += Game.thornses
         if Game.hero != None:
             Game.actors += [Game.hero]
         if Game.enemise != None and Game.enemise != []:
@@ -84,6 +90,8 @@ class Game:
         for enemy in Game.enemise:
             enemy.forced_kill()
         Game.barriers = []
+        Game.spider_webs = []
+        Game.thornses = []
         Game.lose = False
         Game.start = False
         Game.level = 1
@@ -109,6 +117,8 @@ class Game:
         Game.hero.forced_kill()
         Game.enemise = []
         Game.barriers = []
+        Game.spider_webs = []
+        Game.thornses = []
         # TODO: 修改
         if Game.level > 5:
             Game.level = 1
@@ -151,29 +161,11 @@ class Game:
                 ),
                 y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
             ),
-            Basic_Enemy(
-                x=random.uniform(
-                    Game.deviation + Game.WIDTH * 1.0 / 3,
-                    Game.WIDTH * 2.0 / 3 - Game.deviation,
-                ),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
-            ),
             Move_Enemy(
                 x=random.uniform(
                     Game.deviation + Game.WIDTH * 1.0 / 3,
                     Game.WIDTH * 2.0 / 3 - Game.deviation,
                 ),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
-            ),
-            Sniper_Enemy(
-                x=random.uniform(
-                    Game.deviation + Game.WIDTH * 2.0 / 3,
-                    Game.WIDTH - Game.deviation,
-                ),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
-            ),
-            Machine_Gun_Enemy(
-                x=random.uniform(Game.deviation, Game.WIDTH * 1.0 / 3),
                 y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
             ),
         ]
@@ -190,6 +182,26 @@ class Game:
             Barrier(
                 x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
                 y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+            ),
+        ]
+        Game.spider_webs += [
+            Spider_Web(
+                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
+                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+            ),
+            Spider_Web(
+                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
+                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+            ),
+        ]
+        Game.thornses += [
+            Thorns(
+                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
+                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+            ),
+            Thorns(
+                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
+                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
             ),
         ]
 
@@ -261,6 +273,10 @@ class Actor_has_blood(All_Actors):
 
     @abstractmethod
     def forced_kill(self):
+        pass
+
+    @abstractmethod
+    def recover(self, recover_blood: int = 10):
         pass
 
 
@@ -345,7 +361,7 @@ class HP(All_Actors):
         self.health_width = self.width * (self.now_blood * 1.0 / self.full_blood)
 
     def draw(self):
-        screen.draw.rect(Rect(self.left, self.top, self.width, self.height), "white")
+        screen.draw.rect(Rect(self.left, self.top, self.width, self.height), "black")
         screen.draw.filled_rect(
             Rect(self.left + 1, self.top + 1, self.health_width - 2, self.height - 2),
             "red",
@@ -540,6 +556,7 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
         self.check_boundary()
 
     def check_boundary(self):
+        super().check_boundary()
         # left and right boundary
         if (
             self.get_actor().x <= self.get_actor().width / 2
@@ -589,11 +606,13 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
 
 class Pass_Bullet_Bullets_Decorator(Bullets_Decorator):
     def check_collision(self, actor: Actor_has_blood):
-        if actor in self.get_actor().enemies and Game.check_actor_collide(
-            self.get_actor(), actor.get_actor()
-        ):
-            self.get_actor().enemies.remove(actor)
-            actor.be_attacked(self.get_actor().attack_power)
+        super().check_collision(actor)
+        if Game.check_actor_collide(self.get_actor(), actor.get_actor()):
+            self.get_actor().exsit = True
+            actor.recover(self.get_actor().attack_power)
+            if actor in self.get_actor().enemies:
+                self.get_actor().enemies.remove(actor)
+                actor.be_attacked(self.get_actor().attack_power)
 
     def get_copy(self) -> Bullets:
         return Pass_Bullet_Bullets_Decorator(self.bullet.get_copy())
@@ -642,6 +661,73 @@ class Barrier(All_Actors):
         return self.barrier
 
 
+class Spider_Web(All_Actors):
+    def __init__(
+        self,
+        actor_pic: str = "spider_web",
+        x: float = Game.WIDTH / 2,
+        y: float = Game.HEIGHT / 2,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("barrier").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.spider_web = Actor(actor_pic)
+        self.spider_web.x = x
+        self.spider_web.y = y
+
+    def draw(self):
+        self.spider_web.draw()
+
+    def update(self):
+        if Game.check_actor_collide(self.spider_web, Game.hero.get_actor()):
+            Game.hero.slow_down()
+
+    def get_actor(self):
+        return self.spider_web
+
+
+class Thorns(All_Actors):
+    def __init__(
+        self,
+        actor_pic: str = "thorns",
+        x: float = Game.WIDTH / 2,
+        y: float = Game.HEIGHT / 2,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("barrier").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.thorns = Actor(actor_pic)
+        self.thorns.x = x
+        self.thorns.y = y
+        self.attack_power = 4
+        self.attacking = False
+
+    def draw(self):
+        self.thorns.draw()
+
+    def update(self):
+        if not self.attacking and Game.check_actor_collide(
+            self.thorns, Game.hero.get_actor()
+        ):
+            Game.hero.be_attacked(self.attack_power)
+            self.attacking = True
+            clock.schedule_unique(self.unlock_attack, 1)
+
+    def get_actor(self):
+        return self.thorns
+
+    def unlock_attack(self):
+        self.attacking = False
+
+
 # player
 # TODO: 删除时记得取消schedule
 class Hero(Actor_has_blood):
@@ -652,7 +738,9 @@ class Hero(Actor_has_blood):
         self.hero.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
-        self.bullet_proto = Slow_Down_Enemies_Bullets_Decorator(Basic_Bullets())
+        self.bullet_proto = Pass_Bullet_Bullets_Decorator(
+            Rebound_Bullets_Decorator(Basic_Bullets())
+        )
         self.bullet_class = Bullets_Decorator
         self.attack_speed = 1.2  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
@@ -912,10 +1000,17 @@ class Hero(Actor_has_blood):
             return False
         return True
 
-    def recover(self):
-        self.hp.now_blood += 10
+    def recover(self, recover_blood: int = 10):
+        self.hp.now_blood += recover_blood
         if self.hp.now_blood > self.hp.full_blood:
             self.hp.now_blood = self.hp.full_blood
+
+    def slow_down(self):
+        self.hero.speed = 1
+        clock.schedule_unique(self.recover_speed, 0.05)
+
+    def recover_speed(self):
+        self.hero.speed = 2.5
 
 
 class Enemy(Actor_has_blood):
@@ -1018,6 +1113,9 @@ class Basic_Enemy(Enemy):
             self.attacking = False
         Game.enemise.remove(self)
 
+    def recover(self, recover_blood: int = 10):
+        self.hp.now_blood += recover_blood
+
 
 class Sniper_Enemy(Basic_Enemy):
     class Sniper_Bullet(Bullets_Decorator):
@@ -1063,6 +1161,26 @@ class Machine_Gun_Enemy(Basic_Enemy):
     def attack(self):  # shoot
         for i in range(6):
             clock.schedule(self.fire_one_bullet, 0.1 * (i + 1))
+
+
+class Shotgun_Machine_Gun_Enemy(Machine_Gun_Enemy):
+    def fire_one_bullet(self):
+        distance = self.enemy.height / 2
+        pos = (
+            self.enemy.x + distance * math.sin(math.radians(self.enemy.angle)),
+            self.enemy.y + distance * math.cos(math.radians(self.enemy.angle)),
+        )
+        self.bullets.append(self.bullet_class(pos, Game.hero.get_actor().pos))
+        pos = (
+            self.enemy.x - distance * math.sin(math.radians(self.enemy.angle + 45)),
+            self.enemy.y - distance * math.cos(math.radians(self.enemy.angle + 45)),
+        )
+        self.bullets.append(self.bullet_class(pos, Game.hero.get_actor().pos))
+        pos = (
+            self.enemy.x - distance * math.sin(math.radians(self.enemy.angle - 45)),
+            self.enemy.y - distance * math.cos(math.radians(self.enemy.angle - 45)),
+        )
+        self.bullets.append(self.bullet_class(pos, Game.hero.get_actor().pos))
 
 
 class Move_Enemy(Enemy):
@@ -1153,6 +1271,14 @@ class Move_Enemy(Enemy):
 
     def recover_speed(self):
         self.speed = 1
+
+    def recover(self, recover_blood: int = 10):
+        self.hp.now_blood += recover_blood
+
+
+# TODO: Boss
+class Boss:
+    pass
 
 
 class Buff:
