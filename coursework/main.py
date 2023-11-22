@@ -150,79 +150,187 @@ class Game:
     @staticmethod
     def level1():
         Game.enemise += [
+            # left
             Basic_Enemy(
-                x=random.uniform(Game.deviation, Game.WIDTH * 1.0 / 3),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+                x=Game.WIDTH * 2.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
             ),
-            Sniper_Enemy(
-                x=random.uniform(
-                    Game.deviation + Game.WIDTH * 2.0 / 3,
-                    Game.WIDTH - Game.deviation,
-                ),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            # mid
+            Basic_Enemy(
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
             ),
-            Move_Enemy(
-                x=random.uniform(
-                    Game.deviation + Game.WIDTH * 1.0 / 3,
-                    Game.WIDTH * 2.0 / 3 - Game.deviation,
-                ),
-                y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
+            # right
+            Basic_Enemy(
+                x=Game.WIDTH * 8.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
             ),
-            # Machine_Gun_Enemy(
-            #     x=random.uniform(
-            #         Game.deviation + Game.WIDTH * 1.0 / 3,
-            #         Game.WIDTH * 2.0 / 3 - Game.deviation,
-            #     ),
-            #     y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
-            # ),
-            # Shotgun_Machine_Gun_Enemy(
-            #     x=random.uniform(
-            #         Game.deviation + Game.WIDTH * 1.0 / 3,
-            #         Game.WIDTH * 2.0 / 3 - Game.deviation,
-            #     ),
-            #     y=random.uniform(Game.deviation, Game.HEIGHT * 1.0 / 4),
-            # ),
+            # mid_right
+            Basic_Enemy(
+                x=Game.WIDTH * 6.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            # mid_left
+            Basic_Enemy(
+                x=Game.WIDTH * 4.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
         ]
 
         Game.barriers += [
+            # bottom
             Barrier(
-                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
-                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
             ),
             Barrier(
-                x=random.uniform(Game.WIDTH * 1.0 / 3, Game.WIDTH * 2.0 / 3),
-                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
             ),
             Barrier(
-                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
-                y=random.uniform(Game.HEIGHT * 1.0 / 3, Game.HEIGHT * 2.0 / 3),
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            # mid
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            # up
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
             ),
         ]
 
-        Game.spider_webs += [
-            Spider_Web(
-                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
-                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
-            ),
-            Spider_Web(
-                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
-                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
-            ),
-        ]
-        Game.thornses += [
-            Thorns(
-                x=random.uniform(0, Game.WIDTH * 1.0 / 3),
-                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
-            ),
-            Thorns(
-                x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
-                y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
-            ),
-        ]
+        # Game.spider_webs += [
+        #     Spider_Web(
+        #         x=random.uniform(0, Game.WIDTH * 1.0 / 3),
+        #         y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+        #     ),
+        #     Spider_Web(
+        #         x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
+        #         y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+        #     ),
+        # ]
+        # Game.thornses += [
+        #     Thorns(
+        #         x=random.uniform(0, Game.WIDTH * 1.0 / 3),
+        #         y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+        #     ),
+        #     Thorns(
+        #         x=random.uniform(Game.WIDTH * 2.0 / 3, Game.WIDTH),
+        #         y=random.uniform(Game.HEIGHT * 3.0 / 5, Game.HEIGHT * 4.0 / 5),
+        #     ),
+        # ]
 
     @staticmethod
     def level2():
-        Game.level1()
+        Game.enemise += [
+            # left
+            Sniper_Enemy(
+                x=Game.WIDTH * 2.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            # mid
+            Basic_Enemy(
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            # right
+            Sniper_Enemy(
+                x=Game.WIDTH * 8.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            # mid_right
+            Basic_Enemy(
+                x=Game.WIDTH * 6.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            # mid_left
+            Basic_Enemy(
+                x=Game.WIDTH * 4.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+        ]
+
+        Game.barriers += [
+            # bottom
+            Barrier(
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.0 / 10,
+            ),
+            # mid
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            # up
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+        ]
 
     @staticmethod
     def level3():
@@ -651,7 +759,7 @@ class Speed_Up_Bullet_Bullets_Decorator(Bullets_Decorator):
 class Barrier(All_Actors):
     def __init__(
         self,
-        actor_pic: str = "barrier",
+        actor_pic: str = "barrier_horizontal",
         x: float = Game.WIDTH / 2,
         y: float = Game.HEIGHT / 2,
     ) -> None:
@@ -1056,6 +1164,7 @@ class Basic_Enemy(Enemy):
         actor_pic: str = "enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
+        hp: int = 16,
     ) -> None:
         """init basic enemy
 
@@ -1071,7 +1180,7 @@ class Basic_Enemy(Enemy):
         self.bullet_class = Basic_Bullets
         self.attack_speed = 1.5  # gap time for each bullet
         self.attacking = False
-        self.hp = HP(16, self)
+        self.hp = HP(hp, self)
 
     def draw(self):
         self.enemy.draw()
