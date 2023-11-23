@@ -16,8 +16,6 @@ TITLE = "Python Game"
 class Game:
     """game elements"""
 
-    last_time = 0
-    now_time = last_time
     WIDTH = WIDTH  # set width of window
     HEIGHT = HEIGHT  # set height of window
     TITLE = TITLE  # set title of window
@@ -127,7 +125,8 @@ class Game:
             Game.level = 1
         Game.level_generator[Game.level - 1]()
         Game.start = False
-        if Game.level != 1:
+        # if Game.level != 1:
+        if True:
             Game.choose_buff = True
             Game.buff_choice = random.sample(Game.buff, 3)
 
@@ -168,13 +167,21 @@ class Game:
                 x=Game.WIDTH * 8.0 / 10,
                 y=Game.HEIGHT * 1.0 / 10,
             ),
+            Move_Enemy(
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
+            Move_Enemy(
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 1.0 / 10,
+            ),
         ]
 
     @staticmethod
     def level2():
         Game.enemise += [
             # left
-            Basic_Enemy(
+            Sniper_Enemy(
                 x=Game.WIDTH * 2.0 / 10,
                 y=Game.HEIGHT * 1.0 / 10,
             ),
@@ -184,7 +191,7 @@ class Game:
                 y=Game.HEIGHT * 1.0 / 10,
             ),
             # right
-            Basic_Enemy(
+            Sniper_Enemy(
                 x=Game.WIDTH * 8.0 / 10,
                 y=Game.HEIGHT * 1.0 / 10,
             ),
@@ -197,6 +204,14 @@ class Game:
             Basic_Enemy(
                 x=Game.WIDTH * 4.0 / 10,
                 y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
             ),
         ]
 
@@ -223,21 +238,21 @@ class Game:
             # mid
             Barrier(
                 x=Game.WIDTH * 9.0 / 10,
-                y=Game.HEIGHT * 5.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
             ),
             Barrier(
                 x=Game.WIDTH * 1.0 / 10,
-                y=Game.HEIGHT * 5.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
             ),
             Barrier(
                 actor_pic="barrier_portrait",
                 x=Game.WIDTH * 9.0 / 10,
-                y=Game.HEIGHT * 5.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
             ),
             Barrier(
                 actor_pic="barrier_portrait",
                 x=Game.WIDTH * 1.0 / 10,
-                y=Game.HEIGHT * 5.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
             ),
             # up
             Barrier(
@@ -261,10 +276,7 @@ class Game:
                 y=Game.HEIGHT * 1.0 / 10,
             ),
             # mid
-            Sniper_Enemy(
-                x=Game.WIDTH * 5.0 / 10,
-                y=Game.HEIGHT * 4.0 / 10,
-            ),
+            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=24),
             # right
             Sniper_Enemy(
                 x=Game.WIDTH * 8.0 / 10,
@@ -279,6 +291,22 @@ class Game:
             Basic_Enemy(
                 x=Game.WIDTH * 3.5 / 10,
                 y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Move_Enemy(
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
+            ),
+            Move_Enemy(
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
             ),
         ]
 
@@ -295,12 +323,12 @@ class Game:
             Barrier(
                 actor_pic="barrier_portrait",
                 x=Game.WIDTH * 7.0 / 10,
-                y=Game.HEIGHT * 7.5 / 10,
+                y=Game.HEIGHT * 8 / 10,
             ),
             Barrier(
                 actor_pic="barrier_portrait",
                 x=Game.WIDTH * 3.0 / 10,
-                y=Game.HEIGHT * 7.5 / 10,
+                y=Game.HEIGHT * 8 / 10,
             ),
             # mid
             Barrier(
@@ -361,10 +389,7 @@ class Game:
                 y=Game.HEIGHT * 1.0 / 10,
             ),
             # mid
-            Machine_Gun_Enemy(
-                x=Game.WIDTH * 5.0 / 10,
-                y=Game.HEIGHT * 4.0 / 10,
-            ),
+            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=24),
             # right
             Sniper_Enemy(
                 x=Game.WIDTH * 8.0 / 10,
@@ -379,6 +404,22 @@ class Game:
             Shotgun_Machine_Gun_Enemy(
                 x=Game.WIDTH * 3.5 / 10,
                 y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 0.5 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Basic_Enemy(
+                x=Game.WIDTH * 9.5 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
             ),
         ]
 
@@ -453,7 +494,9 @@ class Game:
             for j in range(10):
                 Game.enemise.append(
                     Move_Enemy(
-                        x=Game.WIDTH * (j + 0.5) / 10, y=Game.HEIGHT * (i + 1) / 10
+                        x=Game.WIDTH * (j + 0.5) / 10,
+                        y=Game.HEIGHT * (i + 1) / 10,
+                        hp=30,
                     )
                 )
 
@@ -522,21 +565,287 @@ class Game:
             ),
         ]
 
+    @staticmethod
+    def level6():
+        Game.enemise += [
+            # left
+            Sniper_Enemy(x=Game.WIDTH * 2.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=16),
+            # mid
+            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=24),
+            # right
+            Sniper_Enemy(x=Game.WIDTH * 8.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=16),
+            # mid_right
+            Shotgun_Machine_Gun_Enemy(
+                x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
+            ),
+            # mid_left
+            Shotgun_Machine_Gun_Enemy(
+                x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
+            ),
+            Machine_Gun_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Machine_Gun_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=16),
+            Move_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
+            Move_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
+            Move_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
+            Move_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
+        ]
+
+        Game.barriers += [
+            # bottom
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            # mid
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 2.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 8.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+        ]
+
+        Game.spider_webs += [
+            Spider_Web(
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 6.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 6.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 8.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 9.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 9.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
+            ),
+            Spider_Web(
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 4.0 / 10,
+            ),
+        ]
+
+        for i in range(6):
+            Game.thornses.append(
+                Thorns(x=Game.WIDTH * (i * 2.0) / 10, y=Game.HEIGHT * 10.0 / 10)
+            )
+
+        Game.thornses += [
+            Thorns(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 5.0 / 10),
+            Thorns(
+                actor_pic="thorns_portrait",
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 9.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 9.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 3.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 3.5 / 10,
+            ),
+        ]
+
+    def level7():
+        Game.enemise += [Boss()]
+
+        Game.barriers += [
+            # bottom
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 7.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            # mid
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 2.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 8.0 / 10,
+                y=Game.HEIGHT * 2.0 / 10,
+            ),
+        ]
+
+        # Game.spider_webs += [
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 6.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 6.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 3.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 3.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 5.0 / 10,
+        #         y=Game.HEIGHT * 8.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 9.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 9.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 4.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 4.0 / 10,
+        #     ),
+        # ]
+
+        for i in range(6):
+            Game.thornses.append(
+                Thorns(x=Game.WIDTH * (i * 2.0) / 10, y=Game.HEIGHT * 10.0 / 10)
+            )
+
+        Game.thornses += [
+            Thorns(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 5.0 / 10),
+            Thorns(
+                actor_pic="thorns_portrait",
+                x=Game.WIDTH * 5.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 9.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 9.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 7.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 3.5 / 10,
+            ),
+            Thorns(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 3.5 / 10,
+            ),
+        ]
+
     level_generator = [
         level1,
         level2,
         level3,
         level4,
         level5,
+        level6,
+        level7,
     ]  # generate the different level
 
     @staticmethod
     def check_actor_collide(actor1: Actor, actor2: Actor):
         if (
-            actor1.x + actor1.width / 2 >= actor2.x - actor2.width / 2
-            and actor1.x - actor1.width / 2 <= actor2.x + actor2.width / 2
-            and actor1.y + actor1.height / 2 >= actor2.y - actor2.height / 2
-            and actor1.y - actor1.height / 2 <= actor2.y + actor2.height / 2
+            actor1.x + actor1.width / 2 - 2 >= actor2.x - actor2.width / 2 + 2
+            and actor1.x - actor1.width / 2 + 2 <= actor2.x + actor2.width / 2 - 2
+            and actor1.y + actor1.height / 2 - 2 >= actor2.y - actor2.height / 2 + 2
+            and actor1.y - actor1.height / 2 + 2 <= actor2.y + actor2.height / 2 - 2
         ):
             return True
         return False
@@ -852,7 +1161,7 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
     def __init__(self, bullet: Bullets) -> None:
         super().__init__(bullet)
         # number of bounces (3)
-        self.rebound_times = 1
+        self.rebound_times = 2
 
     def update(self):
         self.update_pos()
@@ -987,7 +1296,7 @@ class Spider_Web(All_Actors):
 
     def update(self):
         if Game.check_actor_collide(self.spider_web, Game.hero.get_actor()):
-            Game.hero.slow_down()
+            Game.hero.spider_slow_down()
 
     def get_actor(self):
         return self.spider_web
@@ -1038,7 +1347,7 @@ class Hero(Actor_has_blood):
         self.hero = Actor("hero")
         self.hero.x = Game.WIDTH / 2
         self.hero.y = Game.HEIGHT * 4 / 5
-        self.hero.speed = 2.5  # move speed
+        self.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
         self.bullet_proto = Basic_Bullets()
@@ -1133,9 +1442,6 @@ class Hero(Actor_has_blood):
 
     # shoot
     def attack(self):
-        Game.now_time = time.time()
-        print(Game.now_time - Game.last_time)
-        Game.last_time = Game.now_time
         distance = self.hero.height / 2
         pos = (
             self.hero.x - distance * math.sin(math.radians(self.hero.angle)),
@@ -1189,12 +1495,12 @@ class Hero(Actor_has_blood):
         if self.add_left_top_right_bullet:
             left_bullet = self.bullet_proto.get_copy()
             pos = (
-                self.hero.x - distance * math.sin(math.radians(self.hero.angle + 45)),
-                self.hero.y - distance * math.cos(math.radians(self.hero.angle + 45)),
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle + 30)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle + 30)),
             )
             left_bullet.get_actor().pos = pos
             left_bullet.get_actor().angle = (
-                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 135
+                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 120
             )
             left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
                 math.radians(left_bullet.get_actor().angle)
@@ -1205,12 +1511,12 @@ class Hero(Actor_has_blood):
             self.bullets.append(self.bullet_class(left_bullet))
             right_bullet = self.bullet_proto.get_copy()
             pos = (
-                self.hero.x - distance * math.sin(math.radians(self.hero.angle - 45)),
-                self.hero.y - distance * math.cos(math.radians(self.hero.angle - 45)),
+                self.hero.x - distance * math.sin(math.radians(self.hero.angle - 30)),
+                self.hero.y - distance * math.cos(math.radians(self.hero.angle - 30)),
             )
             right_bullet.get_actor().pos = pos
             right_bullet.get_actor().angle = (
-                right_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 45
+                right_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 60
             )
             right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
                 math.radians(right_bullet.get_actor().angle)
@@ -1266,6 +1572,7 @@ class Hero(Actor_has_blood):
         for barrier in Game.barriers:
             if Game.check_actor_collide(self.get_actor(), barrier.get_actor()):
                 self.hero.pos = self.previous_pos
+                break
 
     def press_key(self):
         if (
@@ -1276,30 +1583,30 @@ class Hero(Actor_has_blood):
         ):
             return False
         if keyboard.UP:
-            self.hero.y -= self.hero.speed
+            self.hero.y -= self.speed
             if keyboard.LEFT:
-                self.hero.x -= self.hero.speed
+                self.hero.x -= self.speed
                 self.hero.angle = 45
             elif keyboard.RIGHT:
-                self.hero.x += self.hero.speed
+                self.hero.x += self.speed
                 self.hero.angle = 315
             else:
                 self.hero.angle = 0
         elif keyboard.DOWN:
-            self.hero.y += self.hero.speed
+            self.hero.y += self.speed
             if keyboard.LEFT:
-                self.hero.x -= self.hero.speed
+                self.hero.x -= self.speed
                 self.hero.angle = 135
             elif keyboard.RIGHT:
-                self.hero.x += self.hero.speed
+                self.hero.x += self.speed
                 self.hero.angle = 225
             else:
                 self.hero.angle = 180
         elif keyboard.LEFT:
-            self.hero.x -= self.hero.speed
+            self.hero.x -= self.speed
             self.hero.angle = 90
         elif keyboard.RIGHT:
-            self.hero.x += self.hero.speed
+            self.hero.x += self.speed
             self.hero.angle = 270
         return True
 
@@ -1331,11 +1638,15 @@ class Hero(Actor_has_blood):
             self.hp.full_blood = self.hp.now_blood
 
     def slow_down(self):
-        self.hero.speed = 1
+        self.speed = 1
+        clock.schedule_unique(self.recover_speed, 0.5)
+
+    def spider_slow_down(self):
+        self.speed = 1
         clock.schedule_unique(self.recover_speed, 0.05)
 
     def recover_speed(self):
-        self.hero.speed = 2.5
+        self.speed = 2.5
 
     def unlock_attaking(self):
         self.attacking = False
@@ -1472,8 +1783,9 @@ class Sniper_Enemy(Basic_Enemy):
         actor_pic: str = "enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
+        hp: int = 8,
     ) -> None:
-        super().__init__(actor_pic, x, y, hp=8)
+        super().__init__(actor_pic, x, y, hp=hp)
         self.attack_speed = 2.5
         self.bullet_class = Sniper_Enemy.Sniper_Bullet
 
@@ -1547,6 +1859,7 @@ class Move_Enemy(Enemy):
         self.attacking = False
         self.hp = HP(hp, self)
         self.attack_power = 4
+        self.change_angle = False
 
     # draw
     def draw(self):
@@ -1569,7 +1882,10 @@ class Move_Enemy(Enemy):
         self.hp.decrease_blood(decrease_value)
 
     def update_self(self):
-        self.adjust_angle()
+        if not self.change_angle:
+            self.adjust_angle()
+            self.change_angle = True
+            clock.schedule_unique(self.unlock_change_angle, 0.15)
         if not self.attacking:
             self.move()
             self.attack()
@@ -1577,6 +1893,8 @@ class Move_Enemy(Enemy):
     def adjust_angle(self):
         # enemy towards the player
         if Game.hero != None:
+            if not random.randint(0, 6) == 0:
+                return
             self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
             self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
             self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
@@ -1605,12 +1923,19 @@ class Move_Enemy(Enemy):
     def unlock_attack(self):
         self.attacking = False
 
+    def unlock_change_angle(self):
+        self.change_angle = False
+
     def slow_down(self):
         self.speed = 0.5
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
         clock.schedule_unique(self.recover_speed, 2.0)
 
     def recover_speed(self):
         self.speed = 1
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
 
     def recover(self, recover_blood: int = 10):
         self.hp.now_blood += recover_blood
@@ -1618,7 +1943,233 @@ class Move_Enemy(Enemy):
 
 # TODO: Boss
 class Boss:
-    pass
+    def __init__(
+        self,
+        actor_pic: str = "enemy",
+        x: int = Game.WIDTH / 2,
+        y: int = Game.HEIGHT / 2,
+        hp: int = 1000,
+    ) -> None:
+        """init basic enemy
+
+        Args:
+            actor_pic (str, optional): Defaults to Actor("enemy").
+            x (int, optional): Defaults to Game.WIDTH/2.
+            y (int, optional): Defaults to Game.HEIGHT/4.
+        """
+        self.enemy = Actor(actor_pic)
+        self.enemy.x = x
+        self.enemy.y = y
+        self.speed = 1  # speed
+        self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+        self.attacking = False
+        self.bullets = []
+        self.bullet_class = Basic_Bullets
+        self.hp = HP(hp, self)
+        self.attack_power = 10
+        self.attack_speed = 2.0
+        self.attack_now_times = 0
+        self.attack_max_times = 2
+        self.mode = random.randint(1, 3)
+        self.change_angle = False
+
+    def draw(self):
+        self.enemy.draw()
+        self.draw_bullets()
+        self.hp.draw()
+
+    def update(self):
+        self.update_self()
+        self.update_bullets()
+        # check blood
+        self.check_blood()
+        # update_blood
+        self.update_blood_pos()
+        self.hp.update()
+
+    def be_attacked(self, decrease_value: int):
+        self.hp.decrease_blood(decrease_value)
+
+    def check_blood(self):
+        # check the enemy is killed?
+        if self.hp.get_now_blood() <= 0:
+            if self.attacking:
+                clock.unschedule(self.attack)
+            Game.enemise.remove(self)
+
+    def update_blood_pos(self):
+        self.hp.update_pos(self)
+
+    def draw_bullets(self):
+        for bullet in self.bullets:
+            bullet.draw()
+
+    def update_self(self):
+        self.adjust_angle()
+        if self.mode == 1:
+            self.enemy.x += self.vx
+            self.enemy.y += self.vy
+        self.attack_schedule()
+
+    def adjust_angle(self):
+        # enemy towards the player
+        if Game.hero != None:
+            self.enemy.angle = self.enemy.angle_to(Game.hero.get_actor()) + 90
+            self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+            self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+
+    def attack_schedule(self):
+        if not self.attacking:
+            clock.schedule_interval(self.attack, self.attack_speed)
+            self.attacking = True
+
+    def update_bullets(self):
+        for bullet in self.bullets:
+            bullet.update()
+            bullet.check_collision(Game.hero)
+            if not bullet.check_exsit():
+                self.bullets.remove(bullet)
+
+    def attack(self):  # fire
+        if self.mode == 1:
+            if Game.check_actor_collide(self.enemy, Game.hero.get_actor()):
+                Game.hero.be_attacked(self.attack_power)
+        if self.mode == 2:
+            for i in range(3):
+                clock.schedule(self.fire_mode_2_bullet, 0.2 * (i + 1))
+        if self.mode == 3:  # create move enemy
+            for i in range(1, 10, 2):
+                Game.enemise.append(
+                    Move_Enemy(x=Game.WIDTH * (1.0 * i) / 10, y=-Game.HEIGHT * 1.0 / 10)
+                )
+        self.change_mode()
+
+    def fire_mode_2_bullet(self):
+        distance = self.enemy.height / 2
+        pos = (
+            self.enemy.x + distance * math.sin(math.radians(self.enemy.angle)),
+            self.enemy.y + distance * math.cos(math.radians(self.enemy.angle)),
+        )
+        bullet_prototype = Slow_Down_Enemies_Bullets_Decorator(
+            Rebound_Bullets_Decorator(Basic_Bullets(pos, Game.hero.get_actor().pos))
+        )
+        bullet1 = bullet_prototype.get_copy()
+        self.bullets.append(bullet1)
+
+        bullet2 = bullet_prototype.get_copy()
+        bullet2.get_actor().angle += 45
+        bullet2.get_actor().vx = bullet2.get_actor().abs_v * math.sin(
+            math.radians(bullet2.get_actor().angle)
+        )
+        bullet2.get_actor().vy = bullet2.get_actor().abs_v * math.cos(
+            math.radians(bullet2.get_actor().angle)
+        )
+        bullet2.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(135 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(135 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet2)
+
+        bullet3 = bullet_prototype.get_copy()
+        bullet3.get_actor().angle -= 45
+        bullet3.get_actor().vx = bullet3.get_actor().abs_v * math.sin(
+            math.radians(bullet3.get_actor().angle)
+        )
+        bullet3.get_actor().vy = bullet3.get_actor().abs_v * math.cos(
+            math.radians(bullet3.get_actor().angle)
+        )
+        bullet3.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(45 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(45 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet3)
+
+        bullet4 = bullet_prototype.get_copy()
+        bullet4.get_actor().angle += 90
+        bullet4.get_actor().vx = bullet4.get_actor().abs_v * math.sin(
+            math.radians(bullet4.get_actor().angle)
+        )
+        bullet4.get_actor().vy = bullet4.get_actor().abs_v * math.cos(
+            math.radians(bullet4.get_actor().angle)
+        )
+        bullet4.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(180 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(180 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet4)
+
+        bullet5 = bullet_prototype.get_copy()
+        bullet5.get_actor().angle -= 90
+        bullet5.get_actor().vx = bullet5.get_actor().abs_v * math.sin(
+            math.radians(bullet5.get_actor().angle)
+        )
+        bullet5.get_actor().vy = bullet5.get_actor().abs_v * math.cos(
+            math.radians(bullet5.get_actor().angle)
+        )
+        bullet5.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(0 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(0 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet5)
+
+        bullet6 = bullet_prototype.get_copy()
+        bullet6.get_actor().angle += 30
+        bullet6.get_actor().vx = bullet6.get_actor().abs_v * math.sin(
+            math.radians(bullet6.get_actor().angle)
+        )
+        bullet6.get_actor().vy = bullet6.get_actor().abs_v * math.cos(
+            math.radians(bullet6.get_actor().angle)
+        )
+        bullet6.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(120 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(120 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet6)
+
+        bullet7 = bullet_prototype.get_copy()
+        bullet7.get_actor().angle -= 30
+        bullet7.get_actor().vx = bullet7.get_actor().abs_v * math.sin(
+            math.radians(bullet7.get_actor().angle)
+        )
+        bullet7.get_actor().vy = bullet7.get_actor().abs_v * math.cos(
+            math.radians(bullet7.get_actor().angle)
+        )
+        bullet7.get_actor().pos = (
+            self.enemy.x + distance * math.cos(math.radians(60 - self.enemy.angle)),
+            self.enemy.y + distance * math.sin(math.radians(60 - self.enemy.angle)),
+        )
+        self.bullets.append(bullet7)
+
+    def get_actor(self):
+        return self.enemy
+
+    def slow_down(self):
+        self.speed = 0.5
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+        clock.schedule_unique(self.recover_speed, 2.0)
+
+    def recover_speed(self):
+        self.speed = 2
+        self.vx = self.speed * math.sin(math.radians(self.enemy.angle))
+        self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
+
+    # only Game progress can force kill
+    def forced_kill(self):
+        if self.attacking:
+            clock.unschedule(self.attack)
+            self.attacking = False
+        Game.enemise.remove(self)
+
+    def recover(self, recover_blood: int = 10):
+        self.hp.now_blood += recover_blood
+
+    def change_mode(self):
+        self.attack_now_times += 1
+        if self.attack_now_times >= self.attack_max_times:
+            self.mode = random.randint(1, 3)
 
 
 class Buff:
