@@ -19,6 +19,7 @@ class Game:
     WIDTH = WIDTH  # set width of window
     HEIGHT = HEIGHT  # set height of window
     TITLE = TITLE  # set title of window
+    mouse_pos = (WIDTH / 2, HEIGHT / 2)
     deviation = 20  # map enlargement deviation value
     actors = []
     background = None
@@ -132,13 +133,17 @@ class Game:
 
     @staticmethod
     def move_buff_cursor():
-        if not Game.buff_pressdown and keyboard.UP:
+        if not Game.buff_pressdown and (keyboard.UP or keyboard.W):
             Game.buff_cursor -= 1
             Game.buff_pressdown = True
-        elif not Game.buff_pressdown and keyboard.DOWN:
+        elif not Game.buff_pressdown and (keyboard.DOWN or keyboard.S):
             Game.buff_cursor += 1
             Game.buff_pressdown = True
-        elif not keyboard.UP and not keyboard.DOWN and not keyboard.RETURN:
+        elif (
+            not (keyboard.UP or keyboard.W)
+            and not (keyboard.DOWN or keyboard.S)
+            and not keyboard.RETURN
+        ):
             Game.buff_pressdown = False
         if not keyboard.RETURN and Game.buff_take_effect:
             Game.buff_take_effect = False
@@ -941,9 +946,11 @@ class Start_Button(All_Actors):
         return self.start_pic
 
     def check_keyboard(self):
-        if keyboard.RETURN and self.start_pic == self.start_no:
+        if (keyboard.RETURN or keyboard.SPACE) and self.start_pic == self.start_no:
             self.start_pic = self.start_yes
-        elif not keyboard.RETURN and self.start_pic == self.start_yes:
+        elif (
+            not (keyboard.RETURN or keyboard.SPACE) and self.start_pic == self.start_yes
+        ):
             Game.start_button = None
             Game.start = True
 
@@ -1354,7 +1361,6 @@ class Hero(Actor_has_blood):
         self.bullet_class = Bullets_Decorator
         self.attack_speed = 0.8  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
-        self.nearest = None
         self.add_front_bullet = False
         self.add_left_top_right_bullet = False
         self.add_left_right_bullet = False
@@ -1368,7 +1374,7 @@ class Hero(Actor_has_blood):
     def update(self):
         self.hp.update()
         self.update_bullets()
-        # traverse enemies to get the nearest enemy and check the collision with bullets
+        # check the collision with bullets
         self.check_enemies()
         # check the keyboard
         self.update_hero_pos()
@@ -1410,13 +1416,9 @@ class Hero(Actor_has_blood):
                 self.attacking = False
             Game.lose = True
 
-    # traverse enemies to get the nearest enemy and check the collision with bullets
+    # check the collision with bullets
     def check_enemies(self):
-        distance = 99999
         for actor in Game.enemise:
-            if self.hero.distance_to(actor.get_actor()) < distance:
-                distance = self.hero.distance_to(actor.get_actor())
-                self.nearest = actor
             for bullet in self.bullets:
                 if bullet.check_exsit():
                     if bullet.check_collision(actor):
@@ -1425,17 +1427,11 @@ class Hero(Actor_has_blood):
     # update hero position
     def update_hero_pos(self):
         self.previous_pos = self.hero.pos
-        if self.press_key():
-            clock.schedule_unique(self.unlock_attaking, 0.5)
-            # self.attacking = False
-            # clock.unschedule(self.attack)
-        else:
+        if not self.press_key():
             # if not press key, excute other events
-            # face the nearest enemy
-            if self.nearest != None:
-                self.hero.angle = self.hero.angle_to(self.nearest.get_actor()) - 90
+            self.hero.angle = self.hero.angle_to(Game.mouse_pos) - 90
             # shoot when the player dosen't move
-            if not self.attacking:
+            if not self.attacking and keyboard.SPACE:
                 self.attack()
                 self.attacking = True
                 clock.schedule_unique(self.unlock_attaking, self.attack_speed)
@@ -1449,9 +1445,7 @@ class Hero(Actor_has_blood):
         )
         bullet = self.bullet_proto.get_copy()
         bullet.get_actor().pos = pos
-        bullet.get_actor().angle = (
-            bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 90
-        )
+        bullet.get_actor().angle = self.hero.angle + 180
         bullet.get_actor().vx = bullet.get_actor().abs_v * math.sin(
             math.radians(bullet.get_actor().angle)
         )
@@ -1462,7 +1456,7 @@ class Hero(Actor_has_blood):
         if self.add_front_bullet:
             left_bullet = self.bullet_proto.get_copy()
             left_bullet.get_actor().pos = pos
-            left_bullet.get_actor().angle = bullet.get_actor().angle
+            left_bullet.get_actor().angle = self.hero.angle + 180
             left_bullet.get_actor().x += left_bullet.get_actor().width * math.cos(
                 math.radians(left_bullet.get_actor().angle)
             )
@@ -1478,7 +1472,7 @@ class Hero(Actor_has_blood):
             self.bullets.append(self.bullet_class(left_bullet))
             right_bullet = self.bullet_proto.get_copy()
             right_bullet.get_actor().pos = pos
-            right_bullet.get_actor().angle = bullet.get_actor().angle
+            right_bullet.get_actor().angle = self.hero.angle + 180
             right_bullet.get_actor().x -= right_bullet.get_actor().width * math.cos(
                 math.radians(right_bullet.get_actor().angle)
             )
@@ -1499,9 +1493,7 @@ class Hero(Actor_has_blood):
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle + 30)),
             )
             left_bullet.get_actor().pos = pos
-            left_bullet.get_actor().angle = (
-                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 120
-            )
+            left_bullet.get_actor().angle = self.hero.angle + 30 + 180
             left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
                 math.radians(left_bullet.get_actor().angle)
             )
@@ -1515,9 +1507,7 @@ class Hero(Actor_has_blood):
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle - 30)),
             )
             right_bullet.get_actor().pos = pos
-            right_bullet.get_actor().angle = (
-                right_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 60
-            )
+            right_bullet.get_actor().angle = self.hero.angle - 30 + 180
             right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
                 math.radians(right_bullet.get_actor().angle)
             )
@@ -1532,9 +1522,7 @@ class Hero(Actor_has_blood):
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle + 90)),
             )
             left_bullet.get_actor().pos = pos
-            left_bullet.get_actor().angle = (
-                left_bullet.get_actor().angle_to(self.nearest.get_actor().pos) + 180
-            )
+            left_bullet.get_actor().angle = self.hero.angle + 90 + 180
             left_bullet.get_actor().vx = left_bullet.get_actor().abs_v * math.sin(
                 math.radians(left_bullet.get_actor().angle)
             )
@@ -1548,9 +1536,7 @@ class Hero(Actor_has_blood):
                 self.hero.y - distance * math.cos(math.radians(self.hero.angle - 90)),
             )
             right_bullet.get_actor().pos = pos
-            right_bullet.get_actor().angle = right_bullet.get_actor().angle_to(
-                self.nearest.get_actor().pos
-            )
+            right_bullet.get_actor().angle = self.hero.angle - 90 + 180
             right_bullet.get_actor().vx = right_bullet.get_actor().abs_v * math.sin(
                 math.radians(right_bullet.get_actor().angle)
             )
@@ -1580,32 +1566,36 @@ class Hero(Actor_has_blood):
             and not keyboard.DOWN
             and not keyboard.LEFT
             and not keyboard.RIGHT
+            and not keyboard.W
+            and not keyboard.A
+            and not keyboard.S
+            and not keyboard.D
         ):
             return False
-        if keyboard.UP:
+        if keyboard.UP or keyboard.W:
             self.hero.y -= self.speed
-            if keyboard.LEFT:
+            if keyboard.LEFT or keyboard.A:
                 self.hero.x -= self.speed
                 self.hero.angle = 45
-            elif keyboard.RIGHT:
+            elif keyboard.RIGHT or keyboard.D:
                 self.hero.x += self.speed
                 self.hero.angle = 315
             else:
                 self.hero.angle = 0
-        elif keyboard.DOWN:
+        elif keyboard.DOWN or keyboard.S:
             self.hero.y += self.speed
-            if keyboard.LEFT:
+            if keyboard.LEFT or keyboard.A:
                 self.hero.x -= self.speed
                 self.hero.angle = 135
-            elif keyboard.RIGHT:
+            elif keyboard.RIGHT or keyboard.D:
                 self.hero.x += self.speed
                 self.hero.angle = 225
             else:
                 self.hero.angle = 180
-        elif keyboard.LEFT:
+        elif keyboard.LEFT or keyboard.A:
             self.hero.x -= self.speed
             self.hero.angle = 90
-        elif keyboard.RIGHT:
+        elif keyboard.RIGHT or keyboard.D:
             self.hero.x += self.speed
             self.hero.angle = 270
         return True
@@ -1626,9 +1616,9 @@ class Hero(Actor_has_blood):
         self.bullet_class = upgrade_bullet_class
 
     def increase_attack_speed(self) -> bool:
-        self.attack_speed -= 0.15
-        if self.attack_speed <= 0.5:
-            self.attack_speed = 0.5
+        self.attack_speed -= 0.25
+        if self.attack_speed <= 0.3:
+            self.attack_speed = 0.3
             return False
         return True
 
@@ -2348,6 +2338,10 @@ def update():  # 更新模块，每帧重复操作
         else:
             for actor in Game.actors:
                 actor.update()
+
+
+def on_mouse_move(pos, rel, buttons):
+    Game.mouse_pos = pos
 
 
 pgzrun.go()  # begin gaming
