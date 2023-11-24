@@ -1033,6 +1033,8 @@ class Basic_Bullets(Bullets):
         self,
         shoot_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
         target_pos: tuple = (Game.WIDTH / 2, Game.HEIGHT / 2),
+        bullet_pic: str = "bullet",
+        abs_v: int = 4,
     ) -> None:
         """Basic_Bullets init
 
@@ -1041,10 +1043,10 @@ class Basic_Bullets(Bullets):
             v (tuple, optional): bullets v. Defaults to (0, 4).
             target_pos (tuple, optional): target position. Defaults to None.
         """
-        self.bullet = Actor("bullet")
+        self.bullet = Actor(bullet_pic)
         self.bullet.x = shoot_pos[0]
         self.bullet.y = shoot_pos[1]
-        self.bullet.abs_v = 4  # absolute speed
+        self.bullet.abs_v = abs_v  # absolute speed
         self.bullet.angle = self.bullet.angle_to(target_pos) + 90
         self.bullet.vx = self.bullet.abs_v * math.sin(math.radians(self.bullet.angle))
         self.bullet.vy = self.bullet.abs_v * math.cos(math.radians(self.bullet.angle))
@@ -1099,6 +1101,7 @@ class Basic_Bullets(Bullets):
 
     def get_copy(self) -> Bullets:
         bullet = Basic_Bullets()
+        bullet.bullet.image = self.bullet.image
         bullet.bullet.pos = self.bullet.pos
         bullet.bullet.abs_v = self.bullet.abs_v
         bullet.bullet.angle = self.bullet.angle
@@ -1351,13 +1354,13 @@ class Thorns(All_Actors):
 # TODO: 删除时记得取消schedule
 class Hero(Actor_has_blood):
     def __init__(self) -> None:
-        self.hero = Actor("hero")
+        self.hero = Actor("hero1")
         self.hero.x = Game.WIDTH / 2
         self.hero.y = Game.HEIGHT * 4 / 5
         self.speed = 2.5  # move speed
         self.previous_pos = self.hero.pos
         self.bullets = []
-        self.bullet_proto = Basic_Bullets()
+        self.bullet_proto = Basic_Bullets(bullet_pic="arrow")
         self.bullet_class = Bullets_Decorator
         self.attack_speed = 0.8  # gap time for each bullet
         self.attacking = False  # if hero attacking, stop add attacking schedule
@@ -1612,6 +1615,9 @@ class Hero(Actor_has_blood):
 
     # upgrade the bullet
     def upgrade_bullet(self, upgrade_bullet_class: Bullets):
+        if upgrade_bullet_class == Rebound_Bullets_Decorator:
+            self.hero.image = "hero2"
+            self.bullet_proto.get_actor().image = "rebound_bullet"
         self.bullet_proto = self.bullet_class(self.bullet_proto)
         self.bullet_class = upgrade_bullet_class
 
@@ -1760,7 +1766,9 @@ class Sniper_Enemy(Basic_Enemy):
                         Increase_Damage_Bullets_Decorator(
                             Increase_Damage_Bullets_Decorator(
                                 Basic_Bullets(
-                                    shoot_pos=shoot_pos, target_pos=target_pos
+                                    shoot_pos=shoot_pos,
+                                    target_pos=target_pos,
+                                    bullet_pic="sniper_bullet",
                                 )
                             )
                         )
@@ -1770,7 +1778,7 @@ class Sniper_Enemy(Basic_Enemy):
 
     def __init__(
         self,
-        actor_pic: str = "enemy",
+        actor_pic: str = "sniper",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
         hp: int = 8,
@@ -1827,7 +1835,7 @@ class Shotgun_Machine_Gun_Enemy(Machine_Gun_Enemy):
 class Move_Enemy(Enemy):
     def __init__(
         self,
-        actor_pic: str = "enemy",
+        actor_pic: str = "move_enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
         hp: int = 24,
@@ -1908,10 +1916,12 @@ class Move_Enemy(Enemy):
         if Game.check_actor_collide(self.enemy, Game.hero.get_actor()):
             Game.hero.be_attacked(self.attack_power)
             self.attacking = True
+            self.enemy.image = "move_enemy_attacking"
             clock.schedule(self.unlock_attack, 1.0)
 
     def unlock_attack(self):
         self.attacking = False
+        self.enemy.image = "move_enemy"
 
     def unlock_change_angle(self):
         self.change_angle = False
@@ -1935,7 +1945,7 @@ class Move_Enemy(Enemy):
 class Boss:
     def __init__(
         self,
-        actor_pic: str = "enemy",
+        actor_pic: str = "boss",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 2,
         hp: int = 1000,
@@ -2028,7 +2038,7 @@ class Boss:
                 Game.hero.be_attacked(self.attack_power)
         if self.mode == 2:
             for i in range(3):
-                clock.schedule(self.fire_mode_2_bullet, 0.2 * (i + 1))
+                clock.schedule(self.fire_mode_2_bullet, 0.3 * (i + 1))
         if self.mode == 3:  # create move enemy
             for i in range(1, 10, 2):
                 Game.enemise.append(
@@ -2043,7 +2053,11 @@ class Boss:
             self.enemy.y + distance * math.cos(math.radians(self.enemy.angle)),
         )
         bullet_prototype = Slow_Down_Enemies_Bullets_Decorator(
-            Rebound_Bullets_Decorator(Basic_Bullets(pos, Game.hero.get_actor().pos))
+            Rebound_Bullets_Decorator(
+                Basic_Bullets(
+                    pos, Game.hero.get_actor().pos, bullet_pic="boss_bullet", abs_v=1.5
+                )
+            )
         )
         bullet1 = bullet_prototype.get_copy()
         self.bullets.append(bullet1)
