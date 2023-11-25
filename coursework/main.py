@@ -1,16 +1,13 @@
-import pgzrun  # 导入游戏库
-import random  # 导入随机库
+import pgzrun
+import random
 from abc import abstractmethod, ABC
 import math
 import copy
 import time
 
-WIDTH = 480  # 设置窗口的宽度
-HEIGHT = 700  # 设置窗口的高度
+WIDTH = 480  # set height
+HEIGHT = 700  # set width
 TITLE = "Python Game"
-# score = 0  # 游戏得分
-# isLoose = False  # 游戏是否失败，初始不失败
-# sounds.game_music.play(-1)  # 循环播放背景音乐
 
 
 class Game:
@@ -29,7 +26,10 @@ class Game:
     barriers = []
     spider_webs = []
     thornses = []
+    instruction = True
+    instruction_pic = Actor("instruction", pos=(WIDTH / 2, HEIGHT / 2))
     lose = False
+    success = False
     start = False
     init = True
     level = 1
@@ -42,8 +42,8 @@ class Game:
 
     @staticmethod
     def update():
-        if Game.lose:
-            Game.deal_lose()
+        if Game.lose or Game.success:
+            Game.deal_lose_or_success()
             return
         Game.generate_actors()
         # while destroy all enemies, go to next level
@@ -58,10 +58,9 @@ class Game:
             Game.move_buff_cursor()
 
     @staticmethod
-    def deal_lose():
-        # deal when the player lose game
-        # TODO:
-        Game.init = True
+    def deal_lose_or_success():
+        if keyboard.SPACE:
+            Game.init = True
 
     @staticmethod
     def generate_actors():
@@ -95,6 +94,7 @@ class Game:
         Game.spider_webs = []
         Game.thornses = []
         Game.lose = False
+        Game.success = False
         Game.start = False
         Game.level = 1
         Game.init = False
@@ -123,7 +123,8 @@ class Game:
         Game.thornses = []
         # TODO: 修改
         if Game.level > len(Game.level_generator):
-            Game.level = 1
+            Game.success = True
+            return
         Game.level_generator[Game.level - 1]()
         Game.start = False
         # if Game.level != 1:
@@ -1762,13 +1763,17 @@ class Sniper_Enemy(Basic_Enemy):
         ) -> None:
             self.bullet = Speed_Up_Bullet_Bullets_Decorator(
                 Speed_Up_Bullet_Bullets_Decorator(
-                    Increase_Damage_Bullets_Decorator(
+                    Speed_Up_Bullet_Bullets_Decorator(
                         Increase_Damage_Bullets_Decorator(
                             Increase_Damage_Bullets_Decorator(
-                                Basic_Bullets(
-                                    shoot_pos=shoot_pos,
-                                    target_pos=target_pos,
-                                    bullet_pic="sniper_bullet",
+                                Increase_Damage_Bullets_Decorator(
+                                    Increase_Damage_Bullets_Decorator(
+                                        Basic_Bullets(
+                                            shoot_pos=shoot_pos,
+                                            target_pos=target_pos,
+                                            bullet_pic="sniper_bullet",
+                                        )
+                                    )
                                 )
                             )
                         )
@@ -1856,7 +1861,7 @@ class Move_Enemy(Enemy):
         self.vy = self.speed * math.cos(math.radians(self.enemy.angle))
         self.attacking = False
         self.hp = HP(hp, self)
-        self.attack_power = 4
+        self.attack_power = 10
         self.change_angle = False
 
     # draw
@@ -2337,14 +2342,36 @@ class Buff:
         return False
 
 
-def draw():  # 绘制模块，每帧重复执行
+def draw():  # draw
     for actor in Game.actors:
         actor.draw()
+    if Game.instruction:
+        Game.instruction_pic.draw()
+    if Game.lose:
+        screen.draw.text(
+            "游戏失败", (50, HEIGHT / 3), fontsize=90, fontname="s", color="black"
+        )
+        screen.draw.text(
+            "按下空格重新开始", (35, HEIGHT / 2), fontsize=50, fontname="s", color="black"
+        )
+    if Game.success:
+        screen.draw.text(
+            "通关成功", (50, HEIGHT / 3), fontsize=90, fontname="s", color="black"
+        )
+        screen.draw.text(
+            "按下空格重新开始", (35, HEIGHT / 2), fontsize=50, fontname="s", color="black"
+        )
 
 
-def update():  # 更新模块，每帧重复操作
+def update():  # update
     if Game.init:
         Game.init_game()
+    # instruct the game
+    if Game.instruction:
+        Game.actors.append(Game.background)
+        if keyboard.SPACE:
+            Game.instruction = False
+        return
     Game.update()
     if not Game.lose:
         if not Game.start:
