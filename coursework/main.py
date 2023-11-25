@@ -3,11 +3,10 @@ import random
 from abc import abstractmethod, ABC
 import math
 import copy
-import time
 
 WIDTH = 480  # set height
 HEIGHT = 700  # set width
-TITLE = "Python Game"
+TITLE = "UML BATTLE"
 
 
 class Game:
@@ -80,7 +79,6 @@ class Game:
         if Game.start_button != None:
             Game.actors += [Game.start_button]
 
-    # TODO: init game
     @staticmethod
     def init_game():
         Game.background = BackGround()
@@ -121,7 +119,6 @@ class Game:
         Game.barriers = []
         Game.spider_webs = []
         Game.thornses = []
-        # TODO: 修改
         if Game.level > len(Game.level_generator):
             Game.success = True
             return
@@ -898,29 +895,18 @@ class Actor_has_blood(All_Actors):
 
 class BackGround(All_Actors):
     def __init__(self) -> None:
-        self.background1 = Actor("background")  # 导入背景1图片
-        self.background1.x = self.background1.width / 2  # 背景1的x坐标
-        self.background1.y = self.background1.height / 2  # 背景1的y坐标
-        self.background2 = Actor("background")  # 导入背景2图片
-        self.background2.x = self.background2.width / 2  # 背景2的x坐标
-        self.background2.y = -self.background2.height / 2  # 背景2的y坐标
+        self.background = Actor("background")
+        self.background.x = self.background.width / 2
+        self.background.y = self.background.height / 2
 
     def draw(self):
-        self.background1.draw()  # 绘制游戏背景
-        # self.background2.draw()  # 绘制游戏背景
+        self.background.draw()
 
     def update(self):
         pass
-        # # 以下代码用于实现背景图片的循环滚动效果
-        # if self.background1.y > 852 / 2 + 852:
-        #     self.background1.y = -852 / 2  # 背景1移动到背景2的正上方
-        # if self.background2.y > 852 / 2 + 852:
-        #     self.background2.y = -852 / 2  # 背景2移动到背景1的正上方
-        # self.background1.y += 1  # 背景1向下滚动
-        # self.background2.y += 1  # 背景2向下滚动
 
     def get_actor(self):
-        return self.background1
+        return self.background
 
 
 class Start_Button(All_Actors):
@@ -1352,7 +1338,6 @@ class Thorns(All_Actors):
 
 
 # player
-# TODO: 删除时记得取消schedule
 class Hero(Actor_has_blood):
     def __init__(self) -> None:
         self.hero = Actor("hero1")
@@ -1655,7 +1640,6 @@ class Enemy(Actor_has_blood):
 
 
 # the most common enemy
-# TODO:删除时记得取消schedule
 class Basic_Enemy(Enemy):
     def __init__(
         self,
@@ -1946,7 +1930,6 @@ class Move_Enemy(Enemy):
         self.hp.now_blood += recover_blood
 
 
-# TODO: Boss
 class Boss:
     def __init__(
         self,
