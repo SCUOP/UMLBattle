@@ -1,1 +1,1 @@
-pyinstaller --collect-all pgzero --onefile -w --add-data "images:images" --add-data "fonts:fonts" main.py
+pyinstaller --collect-all pgzero --onefile -w --add-data "images:images" --add-data "fonts:fonts" -i .\game.ico main.py
