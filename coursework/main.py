@@ -25,6 +25,7 @@ class Game:
     barriers = []
     spider_webs = []
     thornses = []
+    thorning = False  # thornse attack
     instruction = True
     instruction_pic = Actor("instruction", pos=(WIDTH / 2, HEIGHT / 2))
     lose = False
@@ -60,18 +61,23 @@ class Game:
     def deal_lose_or_success():
         if keyboard.SPACE:
             Game.init = True
+        if Game.hero != None:
+            Game.hero.forced_kill()
+        for enemy in Game.enemise:
+            enemy.forced_kill()
 
     @staticmethod
     def generate_actors():
         Game.actors = []
         if Game.background != None:
             Game.actors += [Game.background]
-        if Game.barriers != None and Game.barriers != []:
-            Game.actors += Game.barriers
+
         if Game.spider_webs != None and Game.spider_webs != []:
             Game.actors += Game.spider_webs
         if Game.thornses != None and Game.thornses != []:
             Game.actors += Game.thornses
+        if Game.barriers != None and Game.barriers != []:
+            Game.actors += Game.barriers
         if Game.hero != None:
             Game.actors += [Game.hero]
         if Game.enemise != None and Game.enemise != []:
@@ -499,7 +505,7 @@ class Game:
                     Move_Enemy(
                         x=Game.WIDTH * (j + 0.5) / 10,
                         y=Game.HEIGHT * (i + 1) / 10,
-                        hp=30,
+                        hp=40,
                     )
                 )
 
@@ -571,12 +577,136 @@ class Game:
     @staticmethod
     def level6():
         Game.enemise += [
-            # left
-            Sniper_Enemy(x=Game.WIDTH * 2.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=16),
+        ]
+
+        Game.barriers += [
             # mid
-            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=24),
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 5.0 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 8.0 / 10,
+                y=Game.HEIGHT * 5.5 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 2.0 / 10,
+                y=Game.HEIGHT * 5.5 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 3.0 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 9.0 / 10,
+                y=Game.HEIGHT * 1.5 / 10,
+            ),
+            Barrier(
+                x=Game.WIDTH * 1.0 / 10,
+                y=Game.HEIGHT * 1.5 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 3.5 / 10,
+                y=Game.HEIGHT * 0.5 / 10,
+            ),
+            Barrier(
+                actor_pic="barrier_portrait",
+                x=Game.WIDTH * 6.5 / 10,
+                y=Game.HEIGHT * 0.5 / 10,
+            ),
+        ]
+
+        # Game.spider_webs += [
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 6.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 6.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 3.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 3.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 5.0 / 10,
+        #         y=Game.HEIGHT * 8.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 9.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 9.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 7.0 / 10,
+        #         y=Game.HEIGHT * 4.0 / 10,
+        #     ),
+        #     Spider_Web(
+        #         x=Game.WIDTH * 3.0 / 10,
+        #         y=Game.HEIGHT * 4.0 / 10,
+        #     ),
+        # ]
+
+        for i in range(10):
+            for j in range(4):
+                if i in (3, 4, 5) and j in (1, 2):
+                    continue
+                # if i <= 5:
+                Game.thornses.append(
+                    Thorns(
+                        x=Game.WIDTH * (2.0 + j * 2.0) / 10,
+                        y=Game.HEIGHT * (0.5 + 0.5 * i) / 10,
+                    )
+                )
+                # elif j < 2:
+                #     Game.thornses.append(
+                #         Thorns(
+                #             x=Game.WIDTH * (2.0 + j * 1.5) / 10,
+                #             y=Game.HEIGHT * (0.5 + 0.5 * i) / 10,
+                #         )
+                #     )
+                # elif j >= 2:
+                #     Game.thornses.append(
+                #         Thorns(
+                #             x=Game.WIDTH * (6.5 + (j - 2) * 1.5) / 10,
+                #             y=Game.HEIGHT * (0.5 + 0.5 * i) / 10,
+                #         )
+                #     )
+
+    @staticmethod
+    def level7():
+        Game.enemise += [
+            # left
+            Sniper_Enemy(x=Game.WIDTH * 2.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=24),
+            # mid
+            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=30),
             # right
-            Sniper_Enemy(x=Game.WIDTH * 8.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 8.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=24),
             # mid_right
             Shotgun_Machine_Gun_Enemy(
                 x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
@@ -585,14 +715,14 @@ class Game:
             Shotgun_Machine_Gun_Enemy(
                 x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
             ),
-            Machine_Gun_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
-            Machine_Gun_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=16),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=16),
-            Move_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
-            Move_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
-            Move_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
-            Move_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=30),
+            Machine_Gun_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=30),
+            Machine_Gun_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=30),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Move_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
         ]
 
         Game.barriers += [
@@ -712,8 +842,16 @@ class Game:
             ),
         ]
 
-    def level7():
-        Game.enemise += [Boss()]
+    def level8():
+        Game.enemise += [
+            Boss(),
+            Machine_Gun_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=30),
+            Shotgun_Machine_Gun_Enemy(
+                x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=24
+            ),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
+            Basic_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
+        ]
 
         Game.barriers += [
             # bottom
@@ -840,6 +978,7 @@ class Game:
         level5,
         level6,
         level7,
+        level8,
     ]  # generate the different level
 
     @staticmethod
@@ -1155,10 +1294,10 @@ class Slow_Down_Enemies_Bullets_Decorator(Bullets_Decorator):
 
 
 class Rebound_Bullets_Decorator(Bullets_Decorator):
-    def __init__(self, bullet: Bullets) -> None:
+    def __init__(self, bullet: Bullets, rebound_times: int = 2) -> None:
         super().__init__(bullet)
         # number of bounces (3)
-        self.rebound_times = 2
+        self.rebound_times = rebound_times
 
     def update(self):
         self.update_pos()
@@ -1210,7 +1349,7 @@ class Rebound_Bullets_Decorator(Bullets_Decorator):
         self.get_actor().y += self.get_actor().vy
 
     def get_copy(self) -> Bullets:
-        return Rebound_Bullets_Decorator(self.bullet.get_copy())
+        return Rebound_Bullets_Decorator(self.bullet.get_copy(), self.rebound_times)
 
 
 class Pass_Bullet_Bullets_Decorator(Bullets_Decorator):
@@ -1317,24 +1456,23 @@ class Thorns(All_Actors):
         self.thorns.x = x
         self.thorns.y = y
         self.attack_power = 4
-        self.attacking = False
 
     def draw(self):
         self.thorns.draw()
 
     def update(self):
-        if not self.attacking and Game.check_actor_collide(
+        if not Game.thorning and Game.check_actor_collide(
             self.thorns, Game.hero.get_actor()
         ):
             Game.hero.be_attacked(self.attack_power)
-            self.attacking = True
+            Game.thorning = True
             clock.schedule_unique(self.unlock_attack, 1)
 
     def get_actor(self):
         return self.thorns
 
     def unlock_attack(self):
-        self.attacking = False
+        Game.thorning = False
 
 
 # player
@@ -2030,7 +2168,9 @@ class Boss:
         if self.mode == 3:  # create move enemy
             for i in range(1, 10, 2):
                 Game.enemise.append(
-                    Move_Enemy(x=Game.WIDTH * (1.0 * i) / 10, y=-Game.HEIGHT * 1.0 / 10)
+                    Move_Enemy(
+                        x=Game.WIDTH * (1.0 * i) / 10, y=-Game.HEIGHT * 1.0 / 10, hp=40
+                    )
                 )
         self.change_mode()
 
@@ -2044,7 +2184,8 @@ class Boss:
             Rebound_Bullets_Decorator(
                 Basic_Bullets(
                     pos, Game.hero.get_actor().pos, bullet_pic="boss_bullet", abs_v=1.5
-                )
+                ),
+                rebound_times=4,
             )
         )
         bullet1 = bullet_prototype.get_copy()
