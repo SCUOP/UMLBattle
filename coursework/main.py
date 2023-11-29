@@ -845,12 +845,10 @@ class Game:
     def level8():
         Game.enemise += [
             Boss(),
-            Machine_Gun_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=30),
-            Shotgun_Machine_Gun_Enemy(
-                x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=24
-            ),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=30),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=24),
             Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
-            Basic_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
         ]
 
         Game.barriers += [
@@ -2485,6 +2483,13 @@ def draw():  # draw
         screen.draw.text(
             "按下空格重新开始", (35, HEIGHT / 2), fontsize=50, fontname="s", color="black"
         )
+    screen.draw.text(
+        "level: " + str(Game.level),
+        (10, HEIGHT * 9.0 / 10),
+        fontsize=20,
+        fontname="s",
+        color="black",
+    )
 
 
 def update():  # update
