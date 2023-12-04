@@ -100,7 +100,7 @@ class Game:
         Game.lose = False
         Game.success = False
         Game.start = False
-        Game.level = 8
+        Game.level = 1
         Game.init = False
         Game.buff = [
             Buff.increase_damage,
@@ -2472,7 +2472,11 @@ def draw():  # draw
             "按下空格重新开始", (35, HEIGHT / 2), fontsize=50, fontname="s", color="black"
         )
     screen.draw.text(
-        "level: " + str(Game.level) + "\n" + "血量: " + str(Game.hero.get_hp()),
+        "level: "
+        + str(8 if Game.success else Game.level)
+        + "\n"
+        + "血量: "
+        + str(Game.hero.get_hp()),
         (10, HEIGHT * 9.0 / 10),
         fontsize=20,
         fontname="s",
