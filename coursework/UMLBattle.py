@@ -1727,8 +1727,7 @@ class Hero(Actor_has_blood):
 
     def forced_kill(self):
         if self.attacking:
-            clock.unschedule(self.attack)
-            self.attacking = False
+            self.attacking = True
         self.bullets = []
         self.hero.x = Game.WIDTH / 2
         self.hero.y = Game.HEIGHT * 4 / 5
