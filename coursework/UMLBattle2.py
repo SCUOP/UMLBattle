@@ -19,6 +19,7 @@ class Game:
     deviation = 20  # map enlargement deviation value
     actors = []
     background = None
+    mouse = None
     hero = None
     start_button = None
     enemise = []
@@ -84,9 +85,11 @@ class Game:
             Game.actors += Game.enemise
         if Game.start_button != None:
             Game.actors += [Game.start_button]
+        Game.actors.append(Game.mouse)
 
     @staticmethod
     def init_game():
+        Game.mouse = Mouse()
         Game.background = BackGround()
         Game.start_button = Start_Button()
         if Game.hero != None:
@@ -1006,6 +1009,19 @@ class All_Actors(ABC):
     @abstractmethod
     def get_actor(self) -> Actor:
         pass
+
+class Mouse(All_Actors):
+    def __init__(self) -> None:
+        self.mouse = Actor("mouse", pos=Game.mouse_pos)
+    
+    def draw(self):
+        self.mouse.draw()
+
+    def update(self):
+        self.mouse.pos = Game.mouse_pos
+
+    def get_actor(self) -> Actor:
+        return self.mouse
 
 
 class Actor_has_blood(All_Actors):
