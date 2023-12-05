@@ -1737,7 +1737,7 @@ class Hero(Actor_has_blood):
 
     def increase_attack_speed(self) -> bool:
         self.attack_speed -= 0.25
-        if self.attack_speed <= 0.3:
+        if self.attack_speed <= 0.4:
             self.attack_speed = 0.3
             return False
         return True
