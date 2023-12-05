@@ -27,7 +27,7 @@ class Game:
     thornses = []
     thorning = False  # thornse attack
     instruction = True
-    instruction_pic = Actor("instruction", pos=(WIDTH / 2, HEIGHT / 2))
+    instruction_pic = Actor("instruction2", pos=(WIDTH / 2, HEIGHT / 2))
     lose = False
     success = False
     start = False
