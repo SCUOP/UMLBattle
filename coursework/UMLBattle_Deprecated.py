@@ -19,7 +19,6 @@ class Game:
     deviation = 20  # map enlargement deviation value
     actors = []
     background = None
-    mouse = None
     hero = None
     start_button = None
     enemise = []
@@ -28,7 +27,7 @@ class Game:
     thornses = []
     thorning = False  # thornse attack
     instruction = True
-    instruction_pic = Actor("instruction2", pos=(WIDTH / 2, HEIGHT / 2))
+    instruction_pic = Actor("instruction", pos=(WIDTH / 2, HEIGHT / 2))
     lose = False
     success = False
     start = False
@@ -85,11 +84,9 @@ class Game:
             Game.actors += Game.enemise
         if Game.start_button != None:
             Game.actors += [Game.start_button]
-        Game.actors.append(Game.mouse)
 
     @staticmethod
     def init_game():
-        Game.mouse = Mouse()
         Game.background = BackGround()
         Game.start_button = Start_Button()
         if Game.hero != None:
@@ -508,7 +505,7 @@ class Game:
                     Move_Enemy(
                         x=Game.WIDTH * (j + 0.5) / 10,
                         y=Game.HEIGHT * (i + 1) / 10,
-                        hp=80,
+                        hp=40,
                     )
                 )
 
@@ -580,12 +577,12 @@ class Game:
     @staticmethod
     def level6():
         Game.enemise += [
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=32),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=32),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=32),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=32),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=32),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=32),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 4.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=16),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=16),
         ]
 
         Game.barriers += [
@@ -705,27 +702,27 @@ class Game:
     def level7():
         Game.enemise += [
             # left
-            Sniper_Enemy(x=Game.WIDTH * 2.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=48),
+            Sniper_Enemy(x=Game.WIDTH * 2.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=24),
             # mid
-            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=60),
+            Machine_Gun_Enemy(x=Game.WIDTH * 5.0 / 10, y=Game.HEIGHT * 4.0 / 10, hp=30),
             # right
-            Sniper_Enemy(x=Game.WIDTH * 8.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=48),
+            Sniper_Enemy(x=Game.WIDTH * 8.0 / 10, y=Game.HEIGHT * 1.0 / 10, hp=24),
             # mid_right
             Shotgun_Machine_Gun_Enemy(
-                x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=48
+                x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
             ),
             # mid_left
             Shotgun_Machine_Gun_Enemy(
-                x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=48
+                x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 3.0 / 10, hp=24
             ),
-            Machine_Gun_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=60),
-            Machine_Gun_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=60),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=48),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=48),
-            Move_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=80),
-            Move_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=80),
-            Move_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=80),
-            Move_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=80),
+            Machine_Gun_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=30),
+            Machine_Gun_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=30),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 2.0 / 10, hp=24),
+            Move_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 3.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
+            Move_Enemy(x=Game.WIDTH * 6.5 / 10, y=Game.HEIGHT * 1.0 / 10, hp=40),
         ]
 
         Game.barriers += [
@@ -848,10 +845,10 @@ class Game:
     def level8():
         Game.enemise += [
             Boss(),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=60),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=48),
-            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=48),
-            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=48),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=30),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 0.5 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 0.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
+            Sniper_Enemy(x=Game.WIDTH * 9.5 / 10, y=Game.HEIGHT * 9.5 / 10, hp=24),
         ]
 
         Game.barriers += [
@@ -1009,19 +1006,6 @@ class All_Actors(ABC):
     @abstractmethod
     def get_actor(self) -> Actor:
         pass
-
-class Mouse(All_Actors):
-    def __init__(self) -> None:
-        self.mouse = Actor("mouse", pos=Game.mouse_pos)
-    
-    def draw(self):
-        self.mouse.draw()
-
-    def update(self):
-        self.mouse.pos = Game.mouse_pos
-
-    def get_actor(self) -> Actor:
-        return self.mouse
 
 
 class Actor_has_blood(All_Actors):
@@ -1505,7 +1489,7 @@ class Hero(Actor_has_blood):
         self.add_front_bullet = False
         self.add_left_top_right_bullet = False
         self.add_left_right_bullet = False
-        self.hp = HP(50, self)
+        self.hp = HP(100, self)
 
     def draw(self):
         self.hp.draw()
@@ -1568,13 +1552,14 @@ class Hero(Actor_has_blood):
     # update hero position
     def update_hero_pos(self):
         self.previous_pos = self.hero.pos
-        # shoot when the player dosen't move
-        if not self.attacking:
-            self.attack()
-            self.attacking = True
-            clock.schedule_unique(self.unlock_attaking, self.attack_speed)
-        self.press_key()
-        self.hero.angle = self.hero.angle_to(Game.mouse_pos) - 90
+        if not self.press_key():
+            # if not press key, excute other events
+            self.hero.angle = self.hero.angle_to(Game.mouse_pos) - 90
+            # shoot when the player dosen't move
+            if not self.attacking and keyboard.SPACE:
+                self.attack()
+                self.attacking = True
+                clock.schedule_unique(self.unlock_attaking, self.attack_speed)
 
     # shoot
     def attack(self):
@@ -1701,22 +1686,44 @@ class Hero(Actor_has_blood):
                 break
 
     def press_key(self):
+        if (
+            not keyboard.UP
+            and not keyboard.DOWN
+            and not keyboard.LEFT
+            and not keyboard.RIGHT
+            and not keyboard.W
+            and not keyboard.A
+            and not keyboard.S
+            and not keyboard.D
+        ):
+            return False
         if keyboard.UP or keyboard.W:
             self.hero.y -= self.speed
             if keyboard.LEFT or keyboard.A:
                 self.hero.x -= self.speed
+                self.hero.angle = 45
             elif keyboard.RIGHT or keyboard.D:
                 self.hero.x += self.speed
+                self.hero.angle = 315
+            else:
+                self.hero.angle = 0
         elif keyboard.DOWN or keyboard.S:
             self.hero.y += self.speed
             if keyboard.LEFT or keyboard.A:
                 self.hero.x -= self.speed
+                self.hero.angle = 135
             elif keyboard.RIGHT or keyboard.D:
                 self.hero.x += self.speed
+                self.hero.angle = 225
+            else:
+                self.hero.angle = 180
         elif keyboard.LEFT or keyboard.A:
             self.hero.x -= self.speed
+            self.hero.angle = 90
         elif keyboard.RIGHT or keyboard.D:
             self.hero.x += self.speed
+            self.hero.angle = 270
+        return True
 
     def forced_kill(self):
         if self.attacking:
@@ -1737,7 +1744,7 @@ class Hero(Actor_has_blood):
 
     def increase_attack_speed(self) -> bool:
         self.attack_speed -= 0.25
-        if self.attack_speed <= 0.4:
+        if self.attack_speed <= 0.3:
             self.attack_speed = 0.3
             return False
         return True
@@ -1761,11 +1768,6 @@ class Hero(Actor_has_blood):
     def unlock_attaking(self):
         self.attacking = False
 
-    def get_hp(self):
-        if Game.lose:
-            return 0
-        return self.hp.now_blood
-
 
 class Enemy(Actor_has_blood):
     def attack(self):
@@ -1779,7 +1781,7 @@ class Basic_Enemy(Enemy):
         actor_pic: str = "enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
-        hp: int = 32,
+        hp: int = 16,
     ) -> None:
         """init basic enemy
 
@@ -1903,7 +1905,7 @@ class Sniper_Enemy(Basic_Enemy):
         actor_pic: str = "sniper",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
-        hp: int = 16,
+        hp: int = 8,
     ) -> None:
         super().__init__(actor_pic, x, y, hp=hp)
         self.attack_speed = 2.5
@@ -1916,7 +1918,7 @@ class Machine_Gun_Enemy(Basic_Enemy):
         actor_pic: str = "enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
-        hp: int = 40,
+        hp: int = 16,
     ) -> None:
         super().__init__(actor_pic, x, y, hp)
         self.attack_speed = 2.0
@@ -1960,7 +1962,7 @@ class Move_Enemy(Enemy):
         actor_pic: str = "move_enemy",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 4,
-        hp: int = 32,
+        hp: int = 24,
     ) -> None:
         """init basic enemy
 
@@ -2069,7 +2071,7 @@ class Boss:
         actor_pic: str = "boss",
         x: int = Game.WIDTH / 2,
         y: int = Game.HEIGHT / 2,
-        hp: int = 1500,
+        hp: int = 1000,
     ) -> None:
         """init basic enemy
 
@@ -2100,13 +2102,6 @@ class Boss:
         self.enemy.draw()
         self.draw_bullets()
         self.hp.draw()
-        screen.draw.text(
-            "BOSS血量: " + str(self.hp.now_blood),
-            (WIDTH / 4, 0),
-            fontsize=30,
-            fontname="s",
-            color="black",
-        )
 
     def update(self):
         self.update_self()
@@ -2488,11 +2483,7 @@ def draw():  # draw
             "按下空格重新开始", (35, HEIGHT / 2), fontsize=50, fontname="s", color="black"
         )
     screen.draw.text(
-        "level: "
-        + str(8 if Game.success else Game.level)
-        + "\n"
-        + "血量: "
-        + str(Game.hero.get_hp()),
+        "level: " + str(Game.level),
         (10, HEIGHT * 9.0 / 10),
         fontsize=20,
         fontname="s",
