@@ -1010,10 +1010,11 @@ class All_Actors(ABC):
     def get_actor(self) -> Actor:
         pass
 
+
 class Mouse(All_Actors):
     def __init__(self) -> None:
         self.mouse = Actor("mouse", pos=Game.mouse_pos)
-    
+
     def draw(self):
         self.mouse.draw()
 
@@ -2063,7 +2064,7 @@ class Move_Enemy(Enemy):
         self.hp.now_blood += recover_blood
 
 
-class Boss:
+class Boss(Enemy):
     def __init__(
         self,
         actor_pic: str = "boss",
